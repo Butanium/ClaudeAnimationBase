@@ -12,11 +12,10 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   reframing at a cut, a scene that doesn't connect. Get a first audience early (render the whole film with sound).
 
 ### p5.brush traps
-- **Light over dark vanishes.** p5.brush mixes colour like pigment: a pale ink line over darker paint all but
-  disappears, only its two ends show as dots. Paint light marks (ripples, foam, highlights on dark ground) as thin
-  **washes**, e.g. `paint(ribbon(points, w0, w1), { wash: col, ink: null })`; use `glow()` for real light.
-- **Spline outlines of closed shapes render only their endpoints** (`paint(pts, { curv > 0 })` with an outline,
-  or `inkLine` around a closed loop). Use polygon outlines (many points, `curv` 0) or ribbons.
+- **Light over dark can vanish.** p5.brush mixes colour like pigment, so depending on the colours a pale ink line
+  over darker paint disappears (see the zoom bullet below for the colours tested). Paint light marks (ripples, foam,
+  highlights on dark ground) as thin **washes**, e.g. `paint(ribbon(points, w0, w1), { wash: col, ink: null })`;
+  use `glow()` for real light.
 - **Big watercolour `fill`s bleed across the frame** (a fill over a very large rectangle smeared into the sky).
   Use `wash` for large areas; keep `fill` for small textured shapes.
 - A translucent wash (`washOp` < 255) mixes like pigment too: a "water patch" painted over a character never
@@ -27,8 +26,8 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   around its own centre (`centred()`). Shapes much bigger than the canvas still lose their outline: draw such edges
   as `inkLine`s no bigger than the canvas. This bug is what made marks show only their two ends as dots, and closed
   spline outlines only their endpoints (tested: fine at zoom 1–1.5 even far from the origin, a dot at 2.2 unless
-  centred). Pigment mixing is real too, though: a cream line over a navy bar vanished at zoom 1.6 with outlines
-  fine, while pale #EEF7F3 over dark teal survived. Keep light marks on dark ground as washes or `glow()`.
+  centred). Pigment mixing is a separate effect: a cream line over a navy bar vanished at zoom 1.6 with outlines
+  fine, while pale #EEF7F3 over dark teal survived.
 - Every `paint` call costs; hundreds per frame are fine. Cap particle counts (e.g. sort by importance).
 
 ### Patterns
