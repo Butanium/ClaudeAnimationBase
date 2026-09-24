@@ -14,10 +14,25 @@ Read ANIMATION_GUIDE.md (the upstream rules), then LESSONS.md (ours), then story
 
 ## Rendering here
 
+**mats is borrowed hardware.** Use it only to scavenge GPU time nobody needs: an L40 is free *and* no one is
+waiting for one, with at least ~1 h before the next job that needs that GPU could start. Check first:
+
+```bash
+ssh mats "sinfo -p compute -o '%n %G %t %C'; squeue -p compute -o '%.8i %.9u %.2t %.10L %.12b %R'; squeue -p compute -t PENDING --start"
+```
+- If jobs are PENDING for GPUs/`Resources`, or a pending job's START_TIME is within the next hour, don't take a GPU.
+  (Pending jobs held by their user or blocked by a QOS limit aren't waiting for GPUs.)
+- Hold for no longer than the work needs (`MINUTES=` on `remote/mats_session.sh start`, 60 by default) and release
+  it as soon as you're done: `remote/mats_session.sh stop`.
+
+**Otherwise, use a cheap RunPod GPU** (a small card is plenty: renders are WebGL, not ML). See "RunPod" below.
+The CPU fallback on this box works but is slow for heavy frames.
+
 | where | how | cost |
 |---|---|---|
-| mats L40 (preferred) | `remote/mats_render.sh <render.mjs args>` — syncs the kit up, renders, brings `out/` back | ~0.2 s/frame; a 20 s film in ~2.5 min |
-| this box, CPU | `node render.mjs --soft-gl <args>` (SwiftShader) | 0.1 s to 35 s/frame (watercolour fills are slow) |
+| mats L40, when idle capacity exists | `remote/mats_render.sh <render.mjs args>` — syncs the kit up, renders, brings `out/` back | free (borrowed); ~0.2 s/frame, a 20 s film in ~2.5 min |
+| RunPod, cheap GPU pod | see below | a few cents per session |
+| this box, CPU | `node render.mjs --soft-gl <args>` (SwiftShader) | free; 0.1 s to 35 s/frame (watercolour fills are slow) |
 
 - `remote/mats_session.sh start|status|stop`: one GPU hold (60 min, `MINUTES=` to change) shared by every checkout
   on this machine (state + lock in `~/.cache/clawd-render/`); `mats_render.sh` grabs one if none is held.
@@ -26,6 +41,14 @@ Read ANIMATION_GUIDE.md (the upstream rules), then LESSONS.md (ours), then story
 - Chrome reaches the L40 only with `--gpu-angle=gl-egl` (run_on_node.sh passes it) and always renders on physical
   GPU 0; run_on_node.sh refuses to render if the job doesn't hold GPU 0. `remote/gpu_probe.mjs` prints the WebGL
   renderer string if in doubt. On Linux render.mjs adds `--no-sandbox` (Ubuntu 23.10+ blocks Chrome's sandbox).
+
+## RunPod
+
+Status: **template not built yet.** The first session that needs RunPod should build it, so the next one only
+runs a script: a pod template with Node 22, Playwright's Chromium and ffmpeg preinstalled (or installed by the
+start command), plus `remote/runpod_render.sh` mirroring `mats_render.sh` (sync up, render with the GPU flags that
+make headless Chrome's WebGL use the card — check with `remote/gpu_probe.mjs`, SwiftShader is not a GPU — sync
+`out/` back, stop the pod). Record the template id and the gotchas here.
 
 ## What's here beyond upstream
 
