@@ -25,8 +25,10 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   or an `inkLine()` at world x ≈ 2300 left only a dot at its first vertex; drawn after `translate()` to its own
   centre, the same shape kept its outline at every zoom. `paint()` and `inkLine()` in core.js now draw every shape
   around its own centre (`centred()`). Shapes much bigger than the canvas still lose their outline: draw such edges
-  as `inkLine`s no bigger than the canvas. The two "only the ends show as dots" traps above may be this same bug
-  (they were seen at zoom ~3); not re-tested since the fix.
+  as `inkLine`s no bigger than the canvas. This bug is what made marks show only their two ends as dots, and closed
+  spline outlines only their endpoints (tested: fine at zoom 1–1.5 even far from the origin, a dot at 2.2 unless
+  centred). Pigment mixing is real too, though: a cream line over a navy bar vanished at zoom 1.6 with outlines
+  fine, while pale #EEF7F3 over dark teal survived. Keep light marks on dark ground as washes or `glow()`.
 - Every `paint` call costs; hundreds per frame are fine. Cap particle counts (e.g. sort by importance).
 
 ### Patterns
