@@ -86,12 +86,13 @@ function stroll(t, t0, t1, x0, x1, u) {
 // ---------- camera ----------
 // camBegin(cx, cy, zoom, rot): world point (cx, cy) lands at screen centre. Letters queued while a camera is
 // active are placed through it automatically (pass {screen:true} to opt out). One level only: always pair with camEnd().
-let CAM = null;
-function camBegin(cx = W / 2, cy = H / 2, zoom = 1, rot = 0) { push(); translate(W / 2, H / 2); rotate(rot); scale(zoom); translate(-cx, -cy); CAM = { cx, cy, zoom, rot }; }
+// LAST_CAM stays set after camEnd(), until the next frame: renderSheet's crops that follow a world point use it.
+let CAM = null, LAST_CAM = null;
+function camBegin(cx = W / 2, cy = H / 2, zoom = 1, rot = 0) { push(); translate(W / 2, H / 2); rotate(rot); scale(zoom); translate(-cx, -cy); CAM = LAST_CAM = { cx, cy, zoom, rot }; }
 function camEnd() { pop(); CAM = null; }
-function toScreen(x, y) {
-  if (!CAM) return [x, y];
-  const c = Math.cos(CAM.rot), s = Math.sin(CAM.rot), dx = (x - CAM.cx) * CAM.zoom, dy = (y - CAM.cy) * CAM.zoom;
+function toScreen(x, y, cam = CAM) {
+  if (!cam) return [x, y];
+  const c = Math.cos(cam.rot), s = Math.sin(cam.rot), dx = (x - cam.cx) * cam.zoom, dy = (y - cam.cy) * cam.zoom;
   return [W / 2 + dx * c - dy * s, H / 2 + dx * s + dy * c];
 }
 
@@ -282,7 +283,7 @@ async function setup() {
 }
 function draw() {
   if (!window.ready) return;
-  LETTERS = []; CAM = null;
+  LETTERS = []; CAM = LAST_CAM = null;
   push(); translate(-W / 2, -H / 2);
   BOILN = Math.floor(T * BOIL); CLAWD_N = 0; boilSeed('frame'); noiseSeed(77);
   image(paperG, 0, 0);
@@ -299,13 +300,17 @@ function composite(t) {
 }
 window.renderAt = async (t, type = 'image/png', q = .92) => { T = t; await redraw(); composite(t); return outC.toDataURL(type, q); };
 // Contact sheet of several times, for visual checks: returns { url, ms[] }. crop = [x, y, w, h] fills each cell with just
-// that region of the frame, at full resolution (for checking faces, hands and contacts up close).
-window.renderSheet = async (times, cols = 3, w = 640, crop = null) => {
-  const [cx, cy, cw, ch] = crop || [0, 0, W, H], h = Math.round(w * ch / cw), rows = Math.ceil(times.length / cols), sc = document.createElement('canvas');
+// that region of the frame, at full resolution (for checking faces, hands and contacts up close). at = [x, y, w, h]
+// instead crops w × h around the WORLD point (x, y), wherever each frame's camera put it (a foot, a splash, a prop on
+// a moving shot); x and y may be expressions evaluated in the page (e.g. 'PLK.MX(1.38)').
+window.renderSheet = async (times, cols = 3, w = 640, crop = null, at = null) => {
+  if (at) at = at.map((v) => typeof v === 'string' ? (0, eval)(v) : v);
+  const [, , cw, ch] = at || crop || [0, 0, W, H], h = Math.round(w * ch / cw), rows = Math.ceil(times.length / cols), sc = document.createElement('canvas');
   sc.width = cols * w; sc.height = rows * h; const c = sc.getContext('2d'), ms = [];
   for (let i = 0; i < times.length; i++) {
     const t0 = performance.now(); T = times[i]; await redraw(); composite(times[i]); ms.push(Math.round(performance.now() - t0));
     const x = (i % cols) * w, y = Math.floor(i / cols) * h;
+    const [cx, cy] = at ? toScreen(at[0], at[1], LAST_CAM).map((v, j) => v - (j ? ch : cw) / 2) : crop || [0, 0];
     c.drawImage(outC, cx, cy, cw, ch, x, y, w, h); c.fillStyle = 'rgba(0,0,0,.65)'; c.fillRect(x, y, 84, 24); c.fillStyle = '#fff'; c.font = '15px sans-serif'; c.fillText(times[i].toFixed(2) + 's', x + 6, y + 17);
   }
   return { url: sc.toDataURL('image/jpeg', .9), ms };

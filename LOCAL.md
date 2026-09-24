@@ -85,6 +85,8 @@ Gotchas we hit:
 ## What's here beyond upstream
 
 - `render.mjs`: `--soft-gl`, `--gpu-angle=vulkan|gl-egl`, `--no-sandbox` on Linux.
+- `render.mjs --crop-at=x,y,w,h` (sheets and strips): a w×h crop around the WORLD point (x, y) through each frame's
+  camera, so a foot or a splash stays centred on a moving shot; x and y may be page expressions (`PLK.MX(1.38)`).
 - `remote/`: the mats and RunPod scripts above.
 - `LESSONS.md`: what we learned, film by film. Add to it.
 - `lib/` (when present): reusable scene pieces from past films, each with a header saying where it came from.
