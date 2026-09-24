@@ -39,10 +39,19 @@ if (args.encode) {
   process.exit(0);
 }
 
-const gpu = process.platform === 'win32' ? ['--use-angle=d3d11'] : process.platform === 'darwin' ? ['--use-angle=metal'] : ['--use-gl=angle'];
+// --soft-gl: no GPU on this machine; render WebGL in software (SwiftShader), which Chrome only allows when asked.
+// --gpu-angle=vulkan|gl-egl: headless Linux on an NVIDIA GPU (a mats L40 node); plain --use-gl=angle gets no WebGL
+// context there. Check which GPU Chrome actually lands on with remote/gpu_probe.mjs.
+const ANGLE = { vulkan: ['--use-angle=vulkan', '--enable-features=Vulkan'], 'gl-egl': ['--use-angle=gl-egl'] };
+if (args['gpu-angle'] && !ANGLE[args['gpu-angle']]) { console.error(`--gpu-angle must be one of ${Object.keys(ANGLE)}`); process.exit(1); }
+const gpu = args['soft-gl'] ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
+  : args['gpu-angle'] ? ANGLE[args['gpu-angle']]
+  : process.platform === 'win32' ? ['--use-angle=d3d11'] : process.platform === 'darwin' ? ['--use-angle=metal'] : ['--use-gl=angle'];
+// Ubuntu 23.10+ blocks Chrome's user-namespace sandbox; headless rendering of local files doesn't need it.
+const sandbox = process.platform === 'linux' ? ['--no-sandbox'] : [];
 const browser = await puppeteer.launch({
   executablePath: CHROME, headless: true, protocolTimeout: 0,
-  args: ['--allow-file-access-from-files', '--ignore-gpu-blocklist', ...gpu, '--enable-gpu-rasterization', '--window-size=1920,1080', '--disable-renderer-backgrounding', '--disable-background-timer-throttling']
+  args: [...sandbox, '--allow-file-access-from-files', '--ignore-gpu-blocklist', ...gpu, '--enable-gpu-rasterization', '--window-size=1920,1080', '--disable-renderer-backgrounding', '--disable-background-timer-throttling']
 });
 async function openPage(tag = '') {
   const page = await browser.newPage();
