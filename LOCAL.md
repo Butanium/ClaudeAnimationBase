@@ -59,7 +59,7 @@ remote/runpod_session.sh stop        # delete the pod when you're done
 - **One pod per machine**, shared by all checkouts (state + lock in `~/.cache/clawd-render/`, each checkout in its own
   folder on the pod). It stays up between renders and **deletes itself after 20 min without a render** (and 4 h
   after boot at the latest: `IDLE_MINUTES=` / `MAX_HOURS=` when it's created). Still run `stop` when done.
-- **Timings (RTX 2000 Ada, Secure Cloud, $0.24/h):** create → ready in ~50 s (image cached, setup ~15 s); first render
+- **Timings (RTX 2000 Ada, Secure Cloud, $0.24/h):** create → ready in 50–100 s (depends on the host; setup ~15 s); first render
   on a pod adds ~15 s (rsync, npm ci, GPU check). Demo scene: 0.18–0.25 s/frame for sheet frames, 0.4 s/frame for
   `--clip` at 1080p (JPEG + x264 in the same loop). Same sheet on this box's CPU: 0.23, 0.16 and **38 s** per frame.
 - **The GPU is checked:** the first render on each pod runs `remote/gpu_probe.mjs` and refuses to render unless
@@ -80,9 +80,7 @@ Gotchas we hit:
   so the scripts delete pods instead of stopping them.
 - The account's registered SSH key isn't this box's: the scripts pass `~/.ssh/id_*.pub` into each pod.
 - The idle watchdog terminates the pod through GraphQL `podTerminate`: the pod-scoped `RUNPOD_API_KEY` gets 403 from
-  the REST API. Tested in pieces on 2026-09-23 (idle trigger on a pod, `podTerminate` from inside a pod, the final
-  script offline), not yet as one run: the first time a pod sits idle, check `remote/runpod_session.sh status` says
-  it's gone 20 min after the last render.
+  the REST API. Verified end to end on 2026-09-23 (`IDLE_MINUTES=1`: pod gone 43 s after it went idle).
 
 ## What's here beyond upstream
 
