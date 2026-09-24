@@ -44,8 +44,8 @@ The CPU fallback on this box works but is slow for heavy frames.
 
 ## RunPod
 
-Status: **template not built yet.** The first session that needs RunPod should build it, so the next one only
-runs a script: a pod template with Node 22, Playwright's Chromium and ffmpeg preinstalled (or installed by the
+Status: **being built (2026-09-23).** If this line is still here, the template doesn't exist yet: build it before
+rendering, so every later session only runs a script. What it needs: a pod template with Node 22, Playwright's Chromium and ffmpeg preinstalled (or installed by the
 start command), plus `remote/runpod_render.sh` mirroring `mats_render.sh` (sync up, render with the GPU flags that
 make headless Chrome's WebGL use the card — check with `remote/gpu_probe.mjs`, SwiftShader is not a GPU — sync
 `out/` back, stop the pod). Record the template id and the gotchas here.
