@@ -9,6 +9,10 @@
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 kit=$(dirname "$here")
+# One render at a time per checkout: each one syncs this folder up with --delete, so a second render would swap the
+# first one's inputs (e.g. its soundtrack) under it.
+exec 9>"$kit/.render.lock"
+flock -n 9 || { echo "waiting for another render from this checkout..." >&2; flock 9; }
 source "$here/runpod_env.sh"
 addr=$("$here/runpod_session.sh" ensure)
 read -r ip port <<<"$addr"

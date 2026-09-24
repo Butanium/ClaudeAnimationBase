@@ -28,6 +28,10 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   spline outlines only their endpoints (tested: fine at zoom 1–1.5 even far from the origin, a dot at 2.2 unless
   centred). Pigment mixing is a separate effect: a cream line over a navy bar vanished at zoom 1.6 with outlines
   fine, while pale #EEF7F3 over dark teal survived.
+- **A NaN coordinate in a polygon throws** "Failed to construct 'OffscreenCanvas': Value is not of type 'unsigned
+  long'", with a stack that points at the shot, not the NaN (Plink's came from `Math.acos` of a ratio > 1).
+- **Outline weight scales with the camera's zoom.** A fine outline at zoom 1.3 makes a small drop a dark speck at
+  zoom 3: keep the on-screen weight (`sw × min(1, 1.6/zoom)`), and give shapes a few px wide a paler outline.
 - Every `paint` call costs; hundreds per frame are fine. Cap particle counts (e.g. sort by importance).
 
 ### Patterns
@@ -40,8 +44,23 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   phase-lock steps to footfall times (a leg pair touches down at walk = 0.25 + k/2).
 - **Continuous camera over small reframes.** A cut that changes the framing only a little reads as a glitch. Keep
   the camera continuous, or make the cut a clearly different shot.
+- **A foot's splash only reads if the foot is planted in world space.** The kit's walk slides the legs with the
+  body; solve each leg for a fixed world point instead (Plink's `reachFor`/`legSole` in lib/plink/legs.js). In side
+  view a lifted foot needs clear water or air under it: step a far leg together with its near partner.
+- **A tiny event needs a close-up of its cause** (a 12 px drop at a medium framing is invisible).
+- **Hold the look before the move:** a character "remembering" something needs ~0.4 s of looking while the thing
+  glints; 0.15 s didn't read.
+- **Time every shot from its own start (`lt`, `dur`) or from named beats, never absolute seconds**, so retiming the
+  film is a timeline edit.
+- **Ink only the edges seen against the air.** Closed outlines on water turned a splash's lip into a pot. Paint drops
+  first and the water sheet over them, so they appear as they fly clear; put footfall splashes in front of the
+  character (behind, its body hides them). A column rising straight behind a head reads as an antenna.
 - **Parallel agents on one film:** split the scene into files with one owner each, share constants through one
-  namespace object, let people request cross-cutting things (e.g. sounds) through the shared timeline file.
+  namespace object, let people request cross-cutting things (e.g. sounds) through the shared timeline file. A
+  supervisor merges in a fixed order and regenerates generated files after each merge (take either side of their
+  conflicts). Teammates merge the main branch in whenever something lands, so they check against the real thing.
+  A take handed between two owners' shots: the earlier shot exports its camera and pose functions, the later
+  one blends the camera over ~1 s.
 
 ## Films
 
@@ -51,3 +70,6 @@ and ring is painted from the same events. First audience notes on v1: the paw to
 trot read as a looping walk with splashes at arbitrary moments (cause → effect must read: the foot visibly comes
 down into its splash); a small camera change between two shots looked like a glitch; only water made sounds while
 lots else happened on screen; the last scene felt disconnected from the story.
+Round 2 (five Claude instances: sound, trot, splash, story, and a supervisor) fixed all five: v2 is 27.2 s with a
+tuned-bubble melody and cartoon sounds, all synthesized. Reusable code: `lib/plink/`. The film's own lessons, in
+detail: its `animation/LESSONS.md` (public copy: https://github.com/Butanium/plink).
