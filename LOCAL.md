@@ -31,7 +31,7 @@ The CPU fallback on this box works but is slow for heavy frames.
 | where | how | cost |
 |---|---|---|
 | mats L40, when idle capacity exists | `remote/mats_render.sh <render.mjs args>` — syncs the kit up, renders, brings `out/` back | free (borrowed); ~0.2 s/frame, a 20 s film in ~2.5 min |
-| RunPod, cheap GPU pod | see below | a few cents per session |
+| RunPod, cheap GPU pod | `remote/runpod_render.sh <render.mjs args>` — same as mats_render.sh, on a pod it starts itself | $0.24/h; ~0.2–0.4 s/frame, a 27 s film at 30 fps ≈ 6 min ≈ 3 cents |
 | this box, CPU | `node render.mjs --soft-gl <args>` (SwiftShader) | free; 0.1 s to 35 s/frame (watercolour fills are slow) |
 
 - `remote/mats_session.sh start|status|stop`: one GPU hold (60 min, `MINUTES=` to change) shared by every checkout
@@ -44,16 +44,50 @@ The CPU fallback on this box works but is slow for heavy frames.
 
 ## RunPod
 
-Status: **being built (2026-09-23).** If this line is still here, the template doesn't exist yet: build it before
-rendering, so every later session only runs a script. What it needs: a pod template with Node 22, Playwright's Chromium and ffmpeg preinstalled (or installed by the
-start command), plus `remote/runpod_render.sh` mirroring `mats_render.sh` (sync up, render with the GPU flags that
-make headless Chrome's WebGL use the card — check with `remote/gpu_probe.mjs`, SwiftShader is not a GPU — sync
-`out/` back, stop the pod). Record the template id and the gotchas here.
+Status: **ready** (built and tested 2026-09-23). Nothing to set up: the scripts create the pod, and the template too
+if it's missing.
+
+```bash
+remote/runpod_render.sh --sheet=1,4,8 --cols=3 --w=480 --out=out/check/sheet.jpg   # starts a pod if none is up
+remote/runpod_render.sh --clip --audio=song.wav --out=out/video.mp4                 # --audio files are copied up
+remote/runpod_session.sh status      # pod, GPU, $/h, idle minutes
+remote/runpod_session.sh stop        # delete the pod when you're done
+```
+- **Billing:** `RUNPOD_API_KEY` = Clément's personal account (dumasclement2002@gmail.com). Every new pod prints the
+  account it bills: if it says matsprogram.org, your session inherited a stale environment: `. ~/.secrets` and rerun
+  (see `~/docs/runpod.md`). `CLAWD_RUNPOD_API_KEY` overrides the key.
+- **One pod per machine**, shared by all checkouts (state + lock in `~/.cache/clawd-render/`, each checkout in its own
+  folder on the pod). It stays up between renders and **deletes itself after 20 min without a render** (and 4 h
+  after boot at the latest: `IDLE_MINUTES=` / `MAX_HOURS=` when it's created). Still run `stop` when done.
+- **Timings (RTX 2000 Ada, Secure Cloud, $0.24/h):** create → ready in ~50 s (image cached, setup ~15 s); first render
+  on a pod adds ~15 s (rsync, npm ci, GPU check). Demo scene: 0.18–0.25 s/frame for sheet frames, 0.4 s/frame for
+  `--clip` at 1080p (JPEG + x264 in the same loop). Same sheet on this box's CPU: 0.23, 0.16 and **38 s** per frame.
+- **The GPU is checked:** the first render on each pod runs `remote/gpu_probe.mjs` and refuses to render unless
+  Chrome's WebGL renderer is NVIDIA (`ANGLE (NVIDIA Corporation, NVIDIA RTX 2000 Ada Generation/PCIe/SSE2, OpenGL
+  ES 3.2)` with `--use-angle=gl-egl`), not SwiftShader.
+- Template `clawd-render` = `ceck30m1e4` on the personal account: `runpod/base:1.0.2-ubuntu2404` (has ffmpeg, rsync,
+  sshd), `NVIDIA_DRIVER_CAPABILITIES=all`, TCP 22, no volume, start command = `remote/runpod_boot.sh`. After editing
+  that file, `remote/runpod_session.sh template` pushes it. Node 22 and a pinned Chrome for Testing are installed at
+  pod start by `remote/runpod_setup.sh` (pinned versions + sha256 at its top).
+- GPUs: `RP_GPUS` in `remote/runpod_env.sh`, cheapest first (RTX A4000/A4500/2000 Ada/A5000/4000 Ada ≈ $0.17–0.28/h,
+  then 3090/L4/A40 up to ~$0.50/h). Secure Cloud first, then Community Cloud with a public IP.
+
+Gotchas we hit:
+- `NVIDIA_DRIVER_CAPABILITIES=all` is what makes the NVIDIA runtime mount the EGL/GL/Vulkan driver libraries; they
+  arrive with their vendor JSON files as **read-only** mounts (don't try to write them).
+- RunPod's `<pod>@ssh.runpod.io` proxy can't rsync: the scripts use the pod's public IP and mapped TCP port 22.
+- Stopping a pod wipes its container disk (everything setup installed) and a restart can come back with zero GPUs,
+  so the scripts delete pods instead of stopping them.
+- The account's registered SSH key isn't this box's: the scripts pass `~/.ssh/id_*.pub` into each pod.
+- The idle watchdog terminates the pod through GraphQL `podTerminate`: the pod-scoped `RUNPOD_API_KEY` gets 403 from
+  the REST API. Tested in pieces on 2026-09-23 (idle trigger on a pod, `podTerminate` from inside a pod, the final
+  script offline), not yet as one run: the first time a pod sits idle, check `remote/runpod_session.sh status` says
+  it's gone 20 min after the last render.
 
 ## What's here beyond upstream
 
 - `render.mjs`: `--soft-gl`, `--gpu-angle=vulkan|gl-egl`, `--no-sandbox` on Linux.
-- `remote/`: the mats scripts above.
+- `remote/`: the mats and RunPod scripts above.
 - `LESSONS.md`: what we learned, film by film. Add to it.
 - `lib/` (when present): reusable scene pieces from past films, each with a header saying where it came from.
 
