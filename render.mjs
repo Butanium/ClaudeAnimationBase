@@ -18,10 +18,19 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, statSync, renameSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { homedir } from 'node:os';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => { const [k, v] = a.replace(/^--/, '').split('='); return [k, v ?? true]; }));
 const CHROMES = [args.chrome, process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser',
+  ...playwrightChromes()];
+// Chromium builds Playwright downloaded (~/.cache/ms-playwright/chromium-NNNN), newest first
+function playwrightChromes() {
+  const dir = `${homedir()}/.cache/ms-playwright`;
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(n => /^chromium-\d+$/.test(n)).sort((a, b) => b.split('-')[1] - a.split('-')[1])
+    .map(n => `${dir}/${n}/chrome-linux64/chrome`);
+}
 const CHROME = CHROMES.find(p => p && existsSync(p));
 if (!CHROME) { console.error('Chrome not found: pass --chrome=<path> or set CHROME_PATH'); process.exit(1); }
 const fps = +(args.fps || 24), FRAMES_DIR = 'out/frames';

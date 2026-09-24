@@ -172,7 +172,17 @@ function ribbon(P, w0, w1 = w0) {
 
 // ---------- paint wrapper ----------
 // One call = one painted shape: optional flat wash, optional watercolor fill, optional hatch, optional ink outline.
-function paint(pts, o = {}) {
+// p5.brush 2.2.3 loses strokes drawn with large coordinates under a zoomed camera (from zoom ~2, only a dot at the
+// first vertex is left), so every shape and line is drawn around its own centre, in small local coordinates.
+function centred(pts, draw) {
+  if (!pts.length) return;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [x, y] of pts) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  push(); translate(cx, cy); draw(pts.map(([x, y]) => [x - cx, y - cy])); pop();
+}
+function paint(pts, o = {}) { centred(pts, (P) => paintAt(P, o)); }
+function paintAt(pts, o) {
   if (o.wash || o.fill || o.hatch) {
     if (o.wash) brush.wash(o.wash, o.washOp ?? 255); else brush.noWash();
     if (o.fill) { brush.fill(o.fill, o.fillOp ?? 170); brush.fillBleed(o.bleed ?? .1); brush.fillTexture(o.tex ?? .4, o.border ?? .35); } else brush.noFill();
@@ -188,7 +198,7 @@ function paint(pts, o = {}) {
   }
 }
 function inkLine(pts, sw = 1, col = PAL.ink, br = 'ink', curv = .5) {
-  brush.noFill(); brush.noWash(); brush.noHatch(); brush.set(br, col, sw); brush.spline(pts, curv);
+  centred(pts, (P) => { brush.noFill(); brush.noWash(); brush.noHatch(); brush.set(br, col, sw); brush.spline(P, curv); });
 }
 
 // ---------- lettering (drawn on the 2D compositor, under the paper grain) ----------

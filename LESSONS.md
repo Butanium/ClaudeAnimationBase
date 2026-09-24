@@ -21,6 +21,12 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   Use `wash` for large areas; keep `fill` for small textured shapes.
 - A translucent wash (`washOp` < 255) mixes like pigment too: a "water patch" painted over a character never
   matches the water around it. To hide what's under water (or behind anything), don't draw it: clip it.
+- **Strokes far from the origin vanish under a zoomed camera** (p5.brush 2.2.3). From zoom ~2, a `paint()` outline
+  or an `inkLine()` at world x ≈ 2300 left only a dot at its first vertex; drawn after `translate()` to its own
+  centre, the same shape kept its outline at every zoom. `paint()` and `inkLine()` in core.js now draw every shape
+  around its own centre (`centred()`). Shapes much bigger than the canvas still lose their outline: draw such edges
+  as `inkLine`s no bigger than the canvas. The two "only the ends show as dots" traps above may be this same bug
+  (they were seen at zoom ~3); not re-tested since the fix.
 - Every `paint` call costs; hundreds per frame are fine. Cap particle counts (e.g. sort by importance).
 
 ### Patterns
