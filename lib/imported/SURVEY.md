@@ -40,7 +40,7 @@ With work (MIT, LICENSE unchanged at the tip):
 | octalline7/super-duper-octo-waffle | MIT | kit-based film (world.js, s4_night, s5_fall, s6_bloom) | nothing: a guillotine-square film; houses/cobbles/fog are film-bound |
 | Ale6100/animaciones-claude | MIT | kit copy + claude_pop.js scene | nothing: one K-pop scene, story code |
 | kuhnhomeuk-cell/procedural-film | MIT | skill: 30 s vertical films in JS; lib.js with boilSeed | nothing now: its own Canvas2D engine (4.7k lines), porting cost too high |
-| heygen-com/hyperframes-community-skills | Apache-2.0 | day-in-my-life kit (brush-ink.js, props.js), session-story engine | not inspected (HyperFrames engine, not p5.brush) |
+| heygen-com/hyperframes-community-skills | Apache-2.0 | day-in-my-life kit (brush-ink.js, props.js), session-story engine | not inspected (a HyperFrames skill; its kit files were not opened) |
 | PixelML/club-170hx | Apache-2.0 | a benchmark result folder containing one kit animation (mimo.js) | nothing: one generated film |
 | lintsinghua/paint-mv-skills | MIT (GitHub: other) | skills for watercolour music videos | link-only (built on PDoomVideo's unlicensed code) |
 | zpalmtree/dave | AGPL-3.0 | discord bot; a Clawd ad storyboard only | nothing |
