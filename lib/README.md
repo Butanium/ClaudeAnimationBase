@@ -68,6 +68,12 @@ What was checked and why the rest wasn't imported: [imported/SURVEY.md](imported
 | [`bianbianzhu/beach.js`](imported/bianbianzhu/beach.js) | a beach set: a palm whose fronds sway, a sea band with glints, a shoreline that laps once a bar, a parasol that opens, a volleyball, gulls, a sun with a face | `BEACH.palm(x, y, s, sway)`, `.sea(t, x0, x1, y0, y1)`, `.shoreline(t, x0, x1, y)`, `.parasol(x, y, s, open)`, `.vball(x, y, r, rot)`, `.gull(x, y, s, flap)`, `.sun(x, y, r, t, face)` | [bianbianzhu/ClaudeAnimationBase](https://github.com/bianbianzhu/ClaudeAnimationBase/tree/feb20e9) "Beach Day", MIT |
 | [`bianbianzhu/ukulele.js`](imported/bianbianzhu/ukulele.js) | Clawd playing a ukulele (front view): strums on the beat, fretting hand on the neck, wordless singing, neck lift; the uke slung on the back for walks | `UKULELE.player(x, y, u, mood, { tilt, mouth: UKULELE.sing(t) })`, `UKULELE.back(u, sw, view)` in a draw hook | same |
 
+### debug/ — tools for checking your work
+
+| file | what it's for | use | source |
+|---|---|---|---|
+| [`paint_count.js`](debug/paint_count.js) | logs each rendered frame's paint() + inkLine() count (the kit's cost unit) as a page line (ignore the extra t=0.00 line from page setup) | add `lib/debug/paint_count.js` last in `--use` | made for the library, 2026-09-25, painter-weather |
+
 ### Elsewhere (link only: no licence, or not code)
 
 | link | author | what it has | why link-only |
