@@ -49,6 +49,7 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 | file | what it's for | use | source |
 |---|---|---|---|
 | [`rain.js`](weather/rain.js) | Rain in depth (far streaks thin and pale, near ones long), slanted by the wind, with crown splashes on the ground or any surface (a head, a roof) and rings on puddles; day or night colours; intensity can ramp over time without drops popping. World space, stays put under a panning camera. | `rain(t, {intensity, wind, ground, surfaces, puddles, night, layer: 'far' / 'near'})` around the characters; `rain.puddle([cx, cy, rx, ry])` | made for the library, 2026-09-25, painter-weather |
+| [`dust.js`](weather/dust.js) | Cartoon dust for acting: a landing puff that rolls out both ways with flying specks, a skid trail along a sliding foot, a run's wind-up (spinning feet throw dust back) and the cloud left hanging at launch. Puffs grow, roll and shrink away; each event is one cloud with one inked silhouette. World space. | `dust.land(t, t0, x, y)`, `dust.skid(t, t0, t1, s => footXY)`, `dust.kick(t, t0, t1, footXY, dir)`; `dust.cloud(puffs)` for your own | made for the library, 2026-09-25, painter-weather |
 
 ### cast/ — secondary characters
 
