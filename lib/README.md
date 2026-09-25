@@ -56,7 +56,21 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### imported/ — adapted from other people's kits (licence in each header)
 
+What was checked and why the rest wasn't imported: [imported/SURVEY.md](imported/SURVEY.md).
+
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`bianbianzhu/beach.js`](imported/bianbianzhu/beach.js) | a beach set: a palm whose fronds sway, a sea band with glints, a shoreline that laps once a bar, a parasol that opens, a volleyball, gulls, a sun with a face | `BEACH.palm(x, y, s, sway)`, `.sea(t, x0, x1, y0, y1)`, `.shoreline(t, x0, x1, y)`, `.parasol(x, y, s, open)`, `.vball(x, y, r, rot)`, `.gull(x, y, s, flap)`, `.sun(x, y, r, t, face)` | [bianbianzhu/ClaudeAnimationBase](https://github.com/bianbianzhu/ClaudeAnimationBase/tree/feb20e9) "Beach Day", MIT |
+| [`bianbianzhu/ukulele.js`](imported/bianbianzhu/ukulele.js) | Clawd playing a ukulele (front view): strums on the beat, fretting hand on the neck, wordless singing, neck lift; the uke slung on the back for walks | `UKULELE.player(x, y, u, mood, { tilt, mouth: UKULELE.sing(t) })`, `UKULELE.back(u, sw, view)` in a draw hook | same |
+
 ### Elsewhere (link only: no licence, or not code)
+
+| link | author | what it has | why link-only |
+|---|---|---|---|
+| [PDoomVideo](https://github.com/JohnHeibel/PDoomVideo) | John Heibel | the 156 s "I'm Upping My P(doom)" music video the kit came from: nine chapters of scene code, its own guide | no licence |
+| [opus-5.5-musical-cartoon](https://github.com/az9713/opus-5.5-musical-cartoon) | az9713 | "Clawd: Mannered Prose", a 15 s musical cartoon with a synthesized score, plus a making-of journal | no licence |
+| [clawd-video](https://github.com/aadil6971/clawd-video) | aadil6971 | a Claude skill/plugin that makes watercolour cartoon shorts with a soundtrack | no licence |
+| [paint-mv-skills](https://github.com/lintsinghua/paint-mv-skills) | lintsinghua | agent skills that turn a song + lyrics into a watercolour music video (Chinese docs) | MIT file, but it says it follows PDoomVideo's source, which has no licence; not inspected further |
 
 ## plink/ — water, feet and a soundtrack synthesized from the same events (Plink, 2026-09-23)
 
