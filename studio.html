@@ -30,6 +30,10 @@
 <script src="src/sheets.js"></script>
 <!-- your video: add a script per scene file, in order -->
 <script src="src/scenes/demo.js"></script>
+<!-- studio.html?use=lib/weather/rain.js,lib/weather/rain.demo.js adds scripts after these (render.mjs --use=): lib assets and their demo loops -->
+<script>
+  for (const s of (new URLSearchParams(location.search).get('use') || '').split(',').filter(Boolean)) document.write(`<script src="${s}"><\/script>`);
+</script>
 <script>
   // Open studio.html?loop=emotions (or views) to scrub a standalone loop instead of the video.
   const q = new URLSearchParams(location.search).get('loop'); if (q && LOOPS[q]) window.LOOP = LOOPS[q];

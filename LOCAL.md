@@ -84,6 +84,11 @@ Gotchas we hit:
 
 ## What's here beyond upstream
 
+- `render_shared.sh <render.mjs args>`: when several agents render on this machine at once. Uses the mats GPU hold if
+  one is alive, otherwise the CPU in one of 2 slots shared by every checkout and worktree (it waits for a free slot).
+- `render.mjs --use=a.js,b.js` (and `studio.html?use=a.js,b.js`): load extra scripts after the scene, e.g. a lib asset
+  and its demo loop, without editing studio.html. Navigation and setup timeouts are 180 s (setup alone took 25 s on a
+  loaded CPU box).
 - `render.mjs`: `--soft-gl`, `--gpu-angle=vulkan|gl-egl`, `--no-sandbox` on Linux.
 - `render.mjs --crop-at=x,y,w,h` (sheets and strips): a w×h crop around the WORLD point (x, y) through each frame's
   camera, so a foot or a splash stays centred on a moving shot; x and y may be page expressions (`PLK.MX(1.38)`).
