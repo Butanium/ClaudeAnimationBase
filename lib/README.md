@@ -52,6 +52,10 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### camera/ — camera moves and transitions
 
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`whip_pan.js`](camera/whip_pan.js) | whip pan between two shots: a small counter-move, the camera flicks away, the frame smears into speed streaks in both scenes' colours (the cut hides under full cover), and shot B arrives sliding and settles | `whipPan.cam(p, o)` → add to each shot's camera; `whipPan(p, o)` after `camEnd()`; p 0 → 1, cut at .5; `o.dir`, `o.a` / `o.b` colour stops | made for the library, 2026-09-25 |
+
 ### sound/ — sound-synced patterns
 
 ### imported/ — adapted from other people's kits (licence in each header)
