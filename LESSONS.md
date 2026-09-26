@@ -58,6 +58,12 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   off-screen at full cover and check the overlap numerically, not by eye.
 - **Check loops without rendering:** `lib/debug/paint_count.js` logs paints per frame; a node harness with p5/p5.brush
   stubbed finds invalid colours and NaN points in under a second, with a stack into the asset.
+- **Water in perspective:** give each row of water a parallax depth running linearly from the far edge's depth to 1 at
+  the waterline, build band edges in their own layer and map them into the world (`Parallax.map`), so one flat surface
+  slides right under pans and zooms (lib/sky/sea.js).
+- **Marks that drift and fade in cycles** drift only during their visible life and reset while invisible; unbounded
+  drift carries a mark out of its tile and it pops at the frame edge.
+- **A shaded underside without clipping:** walk the outline points below a wavy cut line and close them along that line.
 - **Rendering on a GPU (mats/RunPod) doesn't copy `out/`:** a `--use` script kept there is silently skipped (one
   ERR_FILE_NOT_FOUND line, then "no loop named"). Keep scratch loops in a synced folder.
 - **Sync by construction.** When the soundtrack is generated (e.g. synthesized from events), export the events'
