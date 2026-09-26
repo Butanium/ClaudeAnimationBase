@@ -42,6 +42,11 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### sky/ — outdoor backdrops
 
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`daysky.js`](sky/daysky.js) | the sky at any time of day from one number: graded wash, sun and moon on one arc, stars that fade in and twinkle on the beat, drifting cumulus; `DaySky.light(tod)` gives the palette to tint the ground | `DaySky.draw(t, tod, o)` first in the shot (tod 0 = midnight, .25 dawn, .5 noon, .75 dusk; animate it for a colour arc). World space with its own parallax. Sheet: night, pre-dawn, dawn, day, dusk, late dusk | painter-skies, 2026-09-25 |
+| [`landscape.js`](sky/landscape.js) | an endless landscape in depth layers (snowy mountains, hills, a forest edge with fir stands, the meadow with swaying tufts and flowers, foreground grass and bushes) that slide by parallax | `Landscape.draw(t, {light: DaySky.light(tod)})` after the sky, characters at `Landscape.groundY(x)`, then `Landscape.front(t, {light})`. Demo loads `daysky.js` too. Sheet: a pan left → right, a push to zoom 1.9 on Clawd, day → dusk | painter-skies, 2026-09-25 |
+
 ### rooms/ — interiors and town
 
 ### weather/ — weather and particles
