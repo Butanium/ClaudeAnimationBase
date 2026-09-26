@@ -15,7 +15,8 @@
 //     node render.mjs --loop=emotions --png --out=out/loop_emotions                          one cycle as PNGs (for GIFs)
 //   Extra scripts (lib assets and their demo loops), loaded after the scene: --use=lib/weather/rain.js,lib/weather/rain.demo.js
 //   Music: --audio=assets/song.mp3 (or PROJECT.audio) is muxed into --clip and --encode. Other flags: --fps=24,
-//   --chrome=<path to Chrome/Chromium>.
+//   --chrome=<path to Chrome/Chromium>, --draft (fills and hatching painted as flat washes: fast previews without a GPU;
+//   from james-banks/ClaudeAnimationBase@69f06f1, MIT, see paint() in src/core.js).
 import puppeteer from 'puppeteer-core';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, statSync, renameSync, readdirSync } from 'node:fs';
@@ -71,7 +72,7 @@ async function openPage(tag = '') {
   const page = await browser.newPage();
   page.on('console', m => { if (['error', 'warn'].includes(m.type())) console.log(`[page${tag}]`, m.text()); });
   page.on('pageerror', e => console.log(`[page error${tag}]`, e.message));
-  await page.goto(pathToFileURL(resolve('studio.html')).href + '?render' + (args.use ? '&use=' + encodeURIComponent(args.use) : ''), { waitUntil: 'networkidle0', timeout: 180000 });
+  await page.goto(pathToFileURL(resolve('studio.html')).href + '?render' + (args.draft ? '&draft' : '') + (args.use ? '&use=' + encodeURIComponent(args.use) : ''), { waitUntil: 'networkidle0', timeout: 180000 });
   // on a loaded CPU box (--soft-gl) setup alone can take 25 s, past puppeteer's default 30 s navigation timeout
   await page.waitForFunction('window.ready === true', { timeout: 180000 });
   if (args.loop) {
