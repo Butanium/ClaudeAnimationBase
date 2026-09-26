@@ -71,6 +71,11 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### actions/ — Clawd actions and held props
 
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`sit.js`](actions/sit.js) | Clawd sits: plops onto the floor (legs splay), perches on a bench (feet planted, soles showing where a leg comes at the camera), or hops up onto a ledge (legs dangle and kick on the beat, each on its own phase); sitting down (wind-up, drop or hop, squash) and getting up (lean, push, settle); squash and rot pivot at the seat, so moods keep acting while seated; every view (front and 3/4 read best) | `clawd(x, floorY, u, sit(t, feel('happy', t), { h, t0, t1, kick, bob }))`: `(x, floorY)` stays the floor point, `h` = seat height in u (0 floor, ≤1.8 bench, >2 ledge) | made for the library, 2026-09-25 |
+| [`typing.js`](actions/typing.js) | Clawd types: each hand taps on its own sixteenth-note rhythm (never both at once), lines in bursts with thinking pauses, a return-key slam at each line's end, the body bobbing into it; the fists land on the key surface whatever the body does; `keysK` and `typing.typed(t)` drive desk.js's keys and screen so they stop when the hands do | `clawd(x, y, u, typing(t, mood, { top: (y - d.topY) / d.u, t0, t1, line, pause }))` with `d = DESK.layout(...)`; back view at `d.sit` (the at-work staging) or front view behind the desk | made for the library, 2026-09-25 (demo loads `rooms/desk.js`) |
+
 ### camera/ — camera moves and transitions
 
 | asset | what it's for | use | source |
