@@ -67,6 +67,10 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   dip. Overshoot in linear size near the target.
 - **Slow particles and intensity ramps:** snow takes 7–13 s to cross the frame and intensity only applies to newly
   spawned flakes, so a ramp from zero leaves the frame empty for seconds; start it before t = 0.
+- **A prop in a hook inherits the body's squash and rotation:** a balloon went flat on a landing. Undo them inside the
+  hook (`scale(1/|sx|, 1/sy)`, `rotate(flip ? rot : -rot)`) for anything that hangs in world space. For rain to splash
+  on a held prop, keep the prop's geometry in one function shared by the drawing and a world-space helper
+  (`held.canopy` → rain.js `surfaces`), or the splashes drift off it.
 - **Secondary characters on `emotions()`:** for 0.5 s after each key it returns `col`/`dk`/`lt` = Clawd's clay and
   `tint: null`, so a character reading `col` flashes terracotta: name its colours differently and cross-fade its own
   tint. Its body motion is beat-locked too, so a second character on the same emotion bounces in unison with Clawd:
