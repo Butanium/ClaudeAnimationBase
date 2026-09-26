@@ -33,8 +33,33 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
 - **Outline weight scales with the camera's zoom.** A fine outline at zoom 1.3 makes a small drop a dark speck at
   zoom 3: keep the on-screen weight (`sw × min(1, 1.6/zoom)`), and give shapes a few px wide a paler outline.
 - Every `paint` call costs; hundreds per frame are fine. Cap particle counts (e.g. sort by importance).
+- **A `curv` shape taller than ~1500 px vanishes entirely** (1200 px renders, 1600 px and up is gone); the same points
+  without `curv` render at 3200 px. Big wipes and blots: many points, no `curv`.
+- **`curv` also erases the notches between puffs.** For clouds, bushes and tree lines, build the outline as the upper
+  envelope of several circles, sampled densely, and paint it as a straight-edged polygon.
+- **Clipping works:** p5 2.x `beginClip()`/`endClip()` inside `push()`/`pop()` clips washes, fills, strokes and `glow()`
+  (tested at zoom 1 and 2). Call `flushBrush()` before the clip and again before `pop()`. Windows, screens, framed
+  pictures, a full-frame sky inside a window (lib/rooms/room.js `ROOM.clip`).
+- **A NaN colour dies far from its cause:** `seg(t, Infinity, Infinity)` is NaN, `mixCol` turns it into `'#aN'`, and the
+  page throws "Invalid color string" with a stack that stops at the loop, not the asset.
+- **`-(x) ** 2` is a SyntaxError that kills the whole file**; the page logs "Unary operator used immediately before
+  exponentiation" and the render then fails with "X is not defined", pointing at the demo. Write `-((x) ** 2)`.
+- **Pale over dark as a full wash works:** pale 255-opacity washes read cleanly over a night sky (rain streaks at night).
+- **Imported code keeps light ink over dark** even when its author knew the trap: check every light line in an import.
 
 ### Patterns
+- **One outline around a group of overlapping shapes** (a dust cloud, a bush): paint every shape's outline first, then
+  all the washes over them. The washes cover the inner outlines and only the silhouette stays inked.
+- **Parallax inside one camera:** per layer of depth d, `translate(c); scale(zd/zoom); translate(-(c·d + ref·(1−d)))`
+  with `zd = 1+(zoom−1)·d`; fill the layer's visible rectangle with hash-indexed tiles so it is endless and nothing
+  pops in. Sample long edges (ridges, band edges) at fixed world x, or they crawl while the camera pans (lib/sky/).
+- **Blends across a cut:** never paint the RGB average of two scenes' colours (sky blue + violet = grey mud); give each
+  streak one scene's colour and alternate them (lib/camera/whip_pan.js). Covers built from tapered shapes: push the tails
+  off-screen at full cover and check the overlap numerically, not by eye.
+- **Check loops without rendering:** `lib/debug/paint_count.js` logs paints per frame; a node harness with p5/p5.brush
+  stubbed finds invalid colours and NaN points in under a second, with a stack into the asset.
+- **Rendering on a GPU (mats/RunPod) doesn't copy `out/`:** a `--use` script kept there is silently skipped (one
+  ERR_FILE_NOT_FOUND line, then "no loop named"). Keep scratch loops in a synced folder.
 - **Sync by construction.** When the soundtrack is generated (e.g. synthesized from events), export the events'
   timing and geometry to a data file the scene reads, and paint each event from that data. No hand-syncing.
 - **One timeline, two readers.** Keep shot starts and named beats in a JSON file read by both the sound generator
@@ -73,3 +98,20 @@ lots else happened on screen; the last scene felt disconnected from the story.
 Round 2 (five Claude instances: sound, trot, splash, story, and a supervisor) fixed all five: v2 is 27.2 s with a
 tuned-bubble melody and cartoon sounds, all synthesized. Reusable code: `lib/plink/`. The film's own lessons, in
 detail: its `animation/LESSONS.md` (public copy: https://github.com/Butanium/plink).
+
+### Asset library round (2026-09-25) — lib/sky, rooms, weather, cast, actions, camera, imported
+Six painter instances and a harvester, each in its own worktree, grew `lib/` from one film's snapshot into loadable
+assets (one global per file, a demo loop and a render sheet each; `render.mjs --use=` loads them; `lib/gallery.mjs`
+shows them all). A studio-lead reviewed every sheet once before merging. What it taught:
+- **Rich backdrops are expensive:** the room kit is ~200 paints + 120 ink lines + 10 glows, 0.8–1 s/frame on an RTX
+  A4000; on this CPU box that's tens of seconds. Draft mode (`--draft`, fills as flat washes) exists for previews.
+- **The kit's Chrome renders only on physical GPU 0** (EGL ignores CUDA_VISIBLE_DEVICES): a mats hold that lands on
+  another GPU can't render, so check which GPU the hold got before relying on mats.
+- **Harvesting forks:** 36 forks, all forked after the MIT licence landed, all on an unchanged `clawd.js`, so imports
+  drop in; the work is untangling a film's namespace. Four forks independently built a draft mode and three made the frame
+  size configurable (9:16): signals of what people rendering without a GPU, and for phones, need.
+- **A prop that repaints Clawd's arms depends on `clawd()` internals** (the boil key format, the arm pivot, the jitter
+  amount): say so in its header (lib/imported/bianbianzhu/ukulele.js).
+- **Parallel painters in one repo:** one worktree and one category folder each, README rows under pre-made headings
+  (merges then conflict rarely), render slots shared machine-wide (`render_shared.sh`), lessons sent to the lead instead
+  of edited into this file by six people.
