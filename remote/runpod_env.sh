@@ -1,6 +1,6 @@
 # Shared settings for the RunPod render scripts (sourced, not run).
 _kit=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-# CLAWD_RUNPOD_API_KEY overrides the account; RUNPOD_API_KEY is Clément's personal account (see LOCAL.md).
+# CLAWD_RUNPOD_API_KEY overrides RUNPOD_API_KEY: the RunPod account that pays for the pods.
 RP_KEY=${CLAWD_RUNPOD_API_KEY:-${RUNPOD_API_KEY:-}}
 [ -n "$RP_KEY" ] || { echo "runpod: set RUNPOD_API_KEY (or CLAWD_RUNPOD_API_KEY)" >&2; exit 1; }
 RP_TEMPLATE_NAME=clawd-render
