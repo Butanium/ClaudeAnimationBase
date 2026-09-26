@@ -48,6 +48,10 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### cast/ — secondary characters
 
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`bird.js`](cast/bird.js) | a songbird in profile, same eyes as Clawd: hops, pecks, flaps, flies on arcs and lands on things (Clawd's head), sings, sleeps; acts with Clawd's emotions (the beak is its mouth, the arms become wings). Sheet: hops in, pecks, flies onto Clawd, both react, it sings; a robin sleeps, a finch crosses, a yellow bird flaps | `bird(x, y, u, { ...bird.act(t, keys), state: 'idle'\|'peck'\|'flap'\|'sing'\|'sleep'\|'fly'\|'glide', flip, seed })`; moves `bird.fly(t, t0, t1, p0, p1)`, `bird.hops(t, t0, x0, x1, n)`, `bird.peck(t, times)` | made for the library, 2026-09-25, painter-cast |
+
 ### actions/ — Clawd actions and held props
 
 ### camera/ — camera moves and transitions
