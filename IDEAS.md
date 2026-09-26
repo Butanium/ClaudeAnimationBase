@@ -48,10 +48,10 @@ Signed: opus-5.5 (builder-b, "Strings"), 2026-09-26
 ## From the "Strings" MDS film (colours + nonmetric)
 Signed: opus-5.5 (builder-d), 2026-09-26
 
-- **A NaN guard in `paint()`/`inkLine()`:** `inkLine` with a NaN point draws nothing and raises nothing (core `lerp` on
-  arrays returns NaN). A dev-mode check that logs the caller once would have caught my missing chord flight on the
+- **A NaN guard in `paint()`/`inkLine()`:** (DONE for inkLine in 9774403: warns once and skips.) `inkLine` with a NaN
+  point drew nothing and raised nothing (core `lerp` on arrays returns NaN). A dev-mode check that logs the caller once would have caught my missing chord flight on the
   first sheet instead of in a strip.
-- **`armTip(x, y, u, pose, 'L'|'R')` in clawd.js:** world position of an arm tip, mirroring clawd()'s arm transform.
+- **`armTip(x, y, u, pose, 'L'|'R')` in clawd.js:** (DONE in 9774403.) World position of an arm tip, mirroring clawd()'s arm transform.
   Props that leave the hand (toss) or arrive in it (catch, boomerang) need it; the Strings copy is in
   act_colours_nonmetric.js.
 - **A framing check in render.mjs:** at each sheet time, report when the character's box (body, arms, emote) is cut by
@@ -75,7 +75,7 @@ calibration a future sound pass can't measure; worth writing them into sound/REA
 ## Two small helpers the MDS film wanted
 Signed: opus-5.5 (builder-e, dims/outro of "Strings"), 2026-09-26
 
-- **`armTip(x, y, u, pose, 'L'|'R')` in clawd.js:** where an arm tip is in world space for a front-view pose, the
+- **`armTip(x, y, u, pose, 'L'|'R')` in clawd.js:** (DONE in 9774403.) Where an arm tip is in world space for a front-view pose, the
   same pivot/slide/squash math `clawd()` uses. Needed whenever a prop spans both arms (a string held taut) or leaves
   one (a toss), where the `armL`/`armR` hooks don't help. A copy lives in the film's act_dims_outro.js.
 - **`tl.mjs lt <shot> <local times>` and `tl.mjs word <shot> <word>[#n],…`:** print global times for shot-local
@@ -103,3 +103,17 @@ Signed: opus-5.5 (builder-a), 2026-09-26
   arm tip by its neck and rests tilted on the desk whenever the tip is too low
   (`phi = acos(clamp((ground - tip.y) / neck))`). That single rule handles dragging, lifting and swinging, and there
   are no pops between phases. The keyframed version popped every time it switched phase.
+
+## A narrated-explainer template (lib/explainer)
+Signed: opus-5.5 (team-lead, "Strings"), 2026-09-26
+
+The MDS film built a pipeline any narrated film would reuse, now scattered across ~/claude-playgrounds/mds-explainer:
+`pipeline/narrate.py` (script with `{beats}`/`[pauses]`/`>` notes → edge-tts voice, word timings, timeline.js,
+subtitles.srt), `tools/tl.mjs` (read the timeline), the shot plumbing in `mds_common.js`/`mds_main.js` (shots from
+the voice, `B(beat)` / `W(word)` local times, unbuilt shots as placeholders), `tools/finish.sh` (soft + burnt-in
+subtitles, Atkinson Hyperlegible), `tools/final_render.sh --part=k/N` (one slice per pod: one pod's GPU serializes
+parallel renders) and `pipeline/scan_frames.py` (one-off glitch scan). Magic wand: `lib/explainer/` with these, generic
+names instead of MDS.*, and a 30-second demo, so the next explainer starts at "write the script". Gotchas to carry:
+edge-tts tokens can span words ("In 1954"); `-shortest` with a subtitle stream cuts the film at the last cue; the
+launch ssh in final_render.sh blocks until the detached render ends when ControlMaster is on (progress printing was
+useless: use `ssh -n -f` or poll from a second connection).
