@@ -77,6 +77,7 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 |---|---|---|---|
 | [`whip_pan.js`](camera/whip_pan.js) | whip pan between two shots: a small counter-move, the camera flicks away, the frame smears into speed streaks in both scenes' colours (the cut hides under full cover), and shot B arrives sliding and settles | `whipPan.cam(p, o)` → add to each shot's camera; `whipPan(p, o)` after `camEnd()`; p 0 → 1, cut at .5; `o.dir`, `o.a` / `o.b` colour stops | made for the library, 2026-09-25 |
 | [`blot_wipe.js`](camera/blot_wipe.js) | paint-blot wipe: a first splat lands where you aim it (what threw the paint), more splats fill the frame, the cut hides under them, then the wet paint slides off down the screen (`clear: 'run'`) or soaks away from the first splat (`'soak'`) | `blotWipe(p, o)` after `camEnd()`; p 0 → 1, cut at .5; `o.x`, `o.y`, `o.cols`, `o.clear` | made for the library, 2026-09-25 |
+| [`shaped_iris.js`](camera/shaped_iris.js) | shaped irises: heart, star, keyhole (round head on the subject), Clawd's own silhouette (legs and arm nubs, not star-shaped) or a circle, with an optional ink rim; the wipe closes on a point, overshoots and settles, holds on the beat, widens a hair and shuts, then pops open on the next shot | `shapedIris.wipe(p, o)` after `camEnd()`; p 0 → 1, shut at .5; `o.kind`, `o.a` / `o.b` (screen points), `o.hold`, `o.holdB`; `shapedIris(kind, x, y, r, o)` for your own timing | made for the library, 2026-09-25 |
 
 ### sound/ — sound-synced patterns
 
