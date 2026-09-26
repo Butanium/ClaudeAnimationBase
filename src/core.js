@@ -182,7 +182,16 @@ function centred(pts, draw) {
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   push(); translate(cx, cy); draw(pts.map(([x, y]) => [x - cx, y - cy])); pop();
 }
-function paint(pts, o = {}) { centred(pts, (P) => paintAt(P, o)); }
+// Draft previews (studio.html?draft, render.mjs --draft): watercolour fills and hatching become flat washes, which render
+// many times faster without a GPU. Composition, poses and timing stay the same; only the texture is lost. Not for finals.
+// Adapted from https://github.com/james-banks/ClaudeAnimationBase@69f06f1 (src/core.js, render.mjs), MIT, by James Banks
+// (Copyright (c) 2026 James Banks, MIT); changed: the flag is read with URLSearchParams, so a ?use= path can't trigger it.
+const DRAFT = typeof location !== 'undefined' && new URLSearchParams(location.search).has('draft');
+function paint(pts, o = {}) {
+  if (DRAFT && (o.fill || o.hatch)) o = { ...o, wash: o.wash || o.fill, washOp: o.wash ? o.washOp : (o.fillOp ?? 170) * .7, fill: null, hatch: null };
+  if (DRAFT && !o.wash && o.ink === null) return;   // a hatch-only shape with no outline leaves nothing to draw
+  centred(pts, (P) => paintAt(P, o));
+}
 function paintAt(pts, o) {
   if (o.wash || o.fill || o.hatch) {
     if (o.wash) brush.wash(o.wash, o.washOp ?? 255); else brush.noWash();
