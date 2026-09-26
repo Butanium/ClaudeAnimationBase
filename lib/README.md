@@ -62,6 +62,8 @@ What was checked and why the rest wasn't imported: [imported/SURVEY.md](imported
 |---|---|---|---|
 | [`bianbianzhu/beach.js`](imported/bianbianzhu/beach.js) | a beach set: a palm whose fronds sway, a sea band with glints, a shoreline that laps once a bar, a parasol that opens, a volleyball, gulls, a sun with a face | `BEACH.palm(x, y, s, sway)`, `.sea(t, x0, x1, y0, y1)`, `.shoreline(t, x0, x1, y)`, `.parasol(x, y, s, open)`, `.vball(x, y, r, rot)`, `.gull(x, y, s, flap)`, `.sun(x, y, r, t, face)` | [bianbianzhu/ClaudeAnimationBase](https://github.com/bianbianzhu/ClaudeAnimationBase/tree/feb20e9) "Beach Day", MIT |
 | [`bianbianzhu/ukulele.js`](imported/bianbianzhu/ukulele.js) | Clawd playing a ukulele (front view): strums on the beat, fretting hand on the neck, wordless singing, neck lift; the uke slung on the back for walks | `UKULELE.player(x, y, u, mood, { tilt, mouth: UKULELE.sing(t) })`, `UKULELE.back(u, sw, view)` in a draw hook | same |
+| [`james-banks/octopus.js`](imported/james-banks/octopus.js) | a friendly coral octopus: six arms that float and curl, arms you can pose (a wave, a grab), eyes, mouths, blush | `octopus(x, y, s, { arms: [null, [-3.1, -2.2, .5]], eyes: 'happy', mouth: 'grin' })`, `octopus.armAt(...)` | [james-banks/ClaudeAnimationBase](https://github.com/james-banks/ClaudeAnimationBase/tree/e64e9bd) "Memetic Opus", MIT |
+| [`james-banks/living_note.js`](imported/james-banks/living_note.js) | a living music note (eighth or half) with a face that blinks; squash, flag flutter, glow | `livingNote(x, y, s, { col, kind: 'h', eyes: 'wink', sq, flap })` | same |
 
 ### Elsewhere (link only: no licence, or not code)
 
