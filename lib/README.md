@@ -8,6 +8,8 @@ what it expects and where it came from.
 - **See one:** every asset has a demo loop and a render sheet next to it. Scrub the loop at
   `studio.html?use=lib/weather/rain.js,lib/weather/rain.demo.js&loop=weather/rain`, or render it:
   `./render_shared.sh --use=lib/weather/rain.js,lib/weather/rain.demo.js --loop=weather/rain --sheet=0.5,1,1.5 --out=out/check/rain.jpg`.
+- **See them all:** `node lib/gallery.mjs --out=out/gallery` builds a contact sheet of every asset (sheet, purpose, API,
+  source) from this file's index; open `out/gallery/index.html`.
 - `plink/` is older: snapshots of one film's scene code, meant to be copied, not loaded.
 
 ## Adding an asset (the conventions)
