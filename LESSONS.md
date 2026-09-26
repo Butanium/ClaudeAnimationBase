@@ -46,6 +46,11 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   exponentiation" and the render then fails with "X is not defined", pointing at the demo. Write `-((x) ** 2)`.
 - **A hole in a `wash` needs the inner loop wound the other way:** p5.brush fills nonzero, so one polygon made of an
   outer box, a bridge and an inner loop cuts a hole only if the loop runs opposite to the box (lib/camera/shaped_iris.js).
+- **Outline weight doesn't follow `scale()`:** a small character needs line weights from its own size, not Clawd's `u`
+  (the bug's legs became black blobs), and a body squashed flat keeps its full outline (a solid black bar): thin it as
+  it flattens (`sw × (1 − .55·flat)`) and drop the small inner shapes.
+- **The ink brush tapers along a stroke** (`pressure [1.15, .75]`), so one long outline around a symmetric object fades on
+  one side: draw symmetric outlines as two mirrored strokes.
 - **Pale over dark as a full wash works:** pale 255-opacity washes read cleanly over a night sky (rain streaks at night).
 - **Imported code keeps light ink over dark** even when its author knew the trap: check every light line in an import.
 
@@ -82,6 +87,8 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   evaluate its motion half a beat later (lib/cast/bird.js, cat.js `act`).
 - **`eye()` draws the catch-light only when u > 9:** for small characters draw at `U = max(ue, 9.5)` inside
   `scale(ue/U)` (divide `sw` by the scale), only when `ue·zoom > 9`, so close-ups get the highlight.
+- **A container around a character goes in two layers:** a back tint before it, glints and the outline after it with
+  the mouth edge left open (else the closed outline cuts across its feet); keep glints off the face (lib/cast/bug.js jar).
 - **One-outline creatures from a tube:** a 3-point spine with a width per point and rounded ends gives bodies, legs and
   tails as one outline; poses morph by interpolating ~20 numbers, so in-betweens come free. Draw the face after any
   limb or wing that can cover it.
