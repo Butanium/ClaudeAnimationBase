@@ -44,6 +44,8 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   page throws "Invalid color string" with a stack that stops at the loop, not the asset.
 - **`-(x) ** 2` is a SyntaxError that kills the whole file**; the page logs "Unary operator used immediately before
   exponentiation" and the render then fails with "X is not defined", pointing at the demo. Write `-((x) ** 2)`.
+- **A hole in a `wash` needs the inner loop wound the other way:** p5.brush fills nonzero, so one polygon made of an
+  outer box, a bridge and an inner loop cuts a hole only if the loop runs opposite to the box (lib/camera/shaped_iris.js).
 - **Pale over dark as a full wash works:** pale 255-opacity washes read cleanly over a night sky (rain streaks at night).
 - **Imported code keeps light ink over dark** even when its author knew the trap: check every light line in an import.
 
@@ -61,6 +63,13 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
 - **Water in perspective:** give each row of water a parallax depth running linearly from the far edge's depth to 1 at
   the waterline, build band edges in their own layer and map them into the world (`Parallax.map`), so one flat surface
   slides right under pans and zooms (lib/sky/sea.js).
+- **Don't overshoot a size interpolated in log space:** a `backOut` 12% overshoot on a ×20 log-scale iris became a 30%
+  dip. Overshoot in linear size near the target.
+- **Slow particles and intensity ramps:** snow takes 7–13 s to cross the frame and intensity only applies to newly
+  spawned flakes, so a ramp from zero leaves the frame empty for seconds; start it before t = 0.
+- **Accessories drawn in the `draw` hook get the pose for free** (squash, rotation, flip): a snow cap, a hat, a bandage.
+- **Point-of-view eyelids:** lashes read when they hang from the rim into the view; drawn up over the lid they look like
+  stitches.
 - **Marks that drift and fade in cycles** drift only during their visible life and reset while invisible; unbounded
   drift carries a mark out of its tile and it pops at the frame edge.
 - **A shaded underside without clipping:** walk the outline points below a wavy cut line and close them along that line.
