@@ -6,6 +6,8 @@ export PATH=/opt/node/bin:$PATH CHROME_PATH=/opt/chrome-linux64/chrome
 angle=${GPU_ANGLE:-gl-egl}
 cd "$(dirname "$0")/.."
 touch /root/.clawd-active
+# who renders here and when: runpod_session.sh stop refuses to delete a pod other checkouts are still using
+printf '%s\n' "${CLAWD_OWNER:-?}" >.owner; touch .last-render
 if [ ! -f "/root/.clawd-gpu-$angle" ]; then
   probe=$(node remote/gpu_probe.mjs "$CHROME_PATH")
   if ! grep -qE "^angle-$angle +ANGLE \(NVIDIA" <<<"$probe"; then

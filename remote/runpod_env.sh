@@ -4,7 +4,8 @@ _kit=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 RP_KEY=${CLAWD_RUNPOD_API_KEY:-${RUNPOD_API_KEY:-}}
 [ -n "$RP_KEY" ] || { echo "runpod: set RUNPOD_API_KEY (or CLAWD_RUNPOD_API_KEY)" >&2; exit 1; }
 RP_TEMPLATE_NAME=clawd-render
-RP_POD_NAME=clawd-render-$(hostname -s)
+# CLAWD_POD_NAME / CLAWD_STATE_DIR give a crew its own pod instead of the machine's shared one.
+RP_POD_NAME=${CLAWD_POD_NAME:-clawd-render-$(hostname -s)}
 # Cheapest first; all of them run WebGL fine. The pod gets the first one in stock.
 RP_GPUS=${RP_GPUS:-'"NVIDIA RTX A4000","NVIDIA RTX A4500","NVIDIA RTX 2000 Ada Generation","NVIDIA RTX A5000","NVIDIA RTX 4000 Ada Generation","NVIDIA GeForce RTX 3090","NVIDIA L4","NVIDIA A40"'}
 # The pod terminates itself after this long without a render, or this long after boot (the boot script's watchdog).
@@ -12,8 +13,10 @@ IDLE_MINUTES=${IDLE_MINUTES:-20}
 MAX_HOURS=${MAX_HOURS:-4}
 # One folder on the pod per local checkout, like the mats scripts.
 REMOTE_DIR=/root/clawd-render/$(basename "$(dirname "$_kit")")-$(printf '%s' "$_kit" | md5sum | cut -c1-8)
-STATE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/clawd-render
+STATE_DIR=${CLAWD_STATE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/clawd-render}
 mkdir -p "$STATE_DIR"
+# stop refuses while another checkout rendered on the pod within this many minutes (or is rendering now)
+ACTIVE_MINUTES=${ACTIVE_MINUTES:-30}
 POD_STATE=$STATE_DIR/runpod_pod
 
 # rp METHOD PATH [JSON]: RunPod REST API v1; prints the response body, fails on HTTP errors.

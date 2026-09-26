@@ -31,7 +31,7 @@ $ssh "$ip" "cd $REMOTE_DIR && (cmp -s package-lock.json node_modules/.clawd-lock
   (PATH=/opt/node/bin:\$PATH npm ci --ignore-scripts --no-audit --no-fund --no-update-notifier --loglevel=error >/dev/null && cp package-lock.json node_modules/.clawd-lock))"
 log=$(mktemp)
 trap 'rm -f "$log"' EXIT
-if ! $ssh "$ip" "GPU_ANGLE=${GPU_ANGLE:-gl-egl} $REMOTE_DIR/remote/run_on_pod.sh $(printf '%q ' "${args[@]}")" >"$log" 2>&1; then
+if ! $ssh "$ip" "GPU_ANGLE=${GPU_ANGLE:-gl-egl} CLAWD_OWNER=$(printf '%q' "$kit") $REMOTE_DIR/remote/run_on_pod.sh $(printf '%q ' "${args[@]}")" >"$log" 2>&1; then
   grep -v 'INVALID_OPERATION' "$log" >&2 || true
   echo "runpod_render: render failed on $ip:$port (remote/runpod_session.sh status)" >&2
   exit 1

@@ -2,8 +2,11 @@
 # One RunPod GPU pod for rendering, shared by every checkout on this machine (state + lock in ~/.cache/clawd-render/).
 #   remote/runpod_session.sh start      create the pod (or reuse the running one) and set it up; no-op if ready
 #   remote/runpod_session.sh status     pod id, GPU, $/h, uptime, minutes until the idle watchdog deletes it
-#   remote/runpod_session.sh stop       delete the pod (same as terminate: a stopped pod has nothing worth keeping)
+#   remote/runpod_session.sh stop       delete the pod (same as terminate: a stopped pod has nothing worth keeping);
+#                                       refuses while another checkout rendered on it in the last ACTIVE_MINUTES (30)
+#                                       or is rendering now: stop --force (or FORCE=1) deletes anyway
 #   remote/runpod_session.sh ensure     print "IP PORT" of a ready pod, starting one first if needed (runpod_render.sh)
+#   remote/runpod_session.sh users      the other checkouts using the pod (what stop checks)
 #   remote/runpod_session.sh template   create or update the clawd-render template from runpod_boot.sh; print its id
 # The pod deletes itself after IDLE_MINUTES (20) without a render or MAX_HOURS (4) after boot, so a forgotten pod
 # costs at most ~20 min. Quiet on success, loud on failure; every new pod prints the account it bills.
@@ -122,13 +125,40 @@ give_up() {
   exit 1
 }
 
+# other_users ID: the checkouts other than this one that rendered on the pod in the last ACTIVE_MINUTES or are
+# rendering now, one line each (run_on_pod.sh leaves .owner and .last-render in each checkout's folder).
+other_users() {
+  local j ip port
+  j=$(rp GET "/pods/$1") || return 0
+  ip=$(jq -r '.publicIp // empty' <<<"$j"); port=$(jq -r '.portMappings["22"] // empty' <<<"$j")
+  [ -n "$ip" ] && [ -n "$port" ] || return 0
+  $(pod_ssh "$port") "$ip" "me=$REMOTE_DIR lim=$ACTIVE_MINUTES bash -s" <<'EOF' 2>/dev/null || echo "? (pod unreachable: can't tell who uses it)"
+now=$(date +%s)
+for d in /root/clawd-render/*/; do
+  d=${d%/}; [ "$d" = "$me" ] && continue; [ -f "$d/.last-render" ] || continue
+  age=$(( (now - $(stat -c %Y "$d/.last-render")) / 60 )) run=""
+  for p in $(pgrep -f "node render.mjs" || true); do [ "$(readlink /proc/$p/cwd)" = "$d" ] && run=", rendering now"; done
+  if [ $age -lt $lim ] || [ -n "$run" ]; then echo "$(cat "$d/.owner" 2>/dev/null || basename "$d") (last render ${age} min ago$run)"; fi
+done
+EOF
+}
+
+# delete_pods [--force]: delete this machine's pod(s), unless another checkout is still using one (--force or FORCE=1
+# deletes anyway). Several crews can share one pod; one crew's "done" must not pull the GPU from under another.
 delete_pods() {
-  local ids
+  local ids users refused=0
   ids=$( (cat "$POD_STATE" 2>/dev/null; rp GET "/pods?name=$RP_POD_NAME" | jq -r '.[].id') | sort -u)
   for id in $ids; do
+    if [ "${1:-}" != --force ] && [ "${FORCE:-0}" != 1 ] && users=$(other_users "$id") && [ -n "$users" ]; then
+      echo "runpod_session: NOT deleting pod $id: other checkouts are using it:" >&2
+      sed 's/^/  /' <<<"$users" >&2
+      echo "  Leave it (the idle watchdog deletes it once everyone stops), or: remote/runpod_session.sh stop --force" >&2
+      refused=1; continue
+    fi
     rp DELETE "/pods/$id" >/dev/null 2>&1 && echo "deleted pod $id"
   done
   [ -n "$ids" ] || echo "no clawd-render pod"
+  [ $refused = 1 ] && exit 1
   rm -f "$POD_STATE"
 }
 
@@ -145,6 +175,7 @@ case "${1:-status}" in
   start) id=$(current_pod); [ -n "$id" ] || id=$(create_pod); wait_ready "$id" >/dev/null; show "$id" ;;
   ensure) id=$(current_pod); [ -n "$id" ] || id=$(create_pod); wait_ready "$id" ;;
   status) id=$(current_pod); if [ -n "$id" ]; then show "$id"; else echo "no clawd-render pod running"; fi ;;
-  stop|terminate) delete_pods ;;
-  *) echo "usage: $0 start|status|stop|ensure|template" >&2; exit 2 ;;
+  stop|terminate) delete_pods "${2:-}" ;;
+  users) id=$(current_pod); [ -z "$id" ] || other_users "$id" ;;
+  *) echo "usage: $0 start|status|stop [--force]|ensure|users|template" >&2; exit 2 ;;
 esac
