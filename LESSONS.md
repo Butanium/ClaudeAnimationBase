@@ -125,6 +125,11 @@ shows them all). A studio-lead reviewed every sheet once before merging. What it
 - **Harvesting forks:** 36 forks, all forked after the MIT licence landed, all on an unchanged `clawd.js`, so imports
   drop in; the work is untangling a film's namespace. Four forks independently built a draft mode and three made the frame
   size configurable (9:16): signals of what people rendering without a GPU, and for phones, need.
+- **Draft mode, measured** (kit demo, 3 frames at 480 px): on the GPU pod ~3–4× faster; on this CPU box a typical frame
+  only 1.5–2× faster, but every normal CPU run had one frame stall for 41–94 s (not tied to one time; cause unknown, maybe
+  the page's first big watercolour fill) and draft never stalled. Use `--draft` for CPU previews.
+- **Imported characters often seed the boil once for the whole body** with moving parts drawn first, so everything after
+  re-boils every frame: give each moving part its own `boilSeed`.
 - **A prop that repaints Clawd's arms depends on `clawd()` internals** (the boil key format, the arm pivot, the jitter
   amount): say so in its header (lib/imported/bianbianzhu/ukulele.js).
 - **Parallel painters in one repo:** one worktree and one category folder each, README rows under pre-made headings
