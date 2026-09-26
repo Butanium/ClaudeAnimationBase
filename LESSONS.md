@@ -67,6 +67,15 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   dip. Overshoot in linear size near the target.
 - **Slow particles and intensity ramps:** snow takes 7–13 s to cross the frame and intensity only applies to newly
   spawned flakes, so a ramp from zero leaves the frame empty for seconds; start it before t = 0.
+- **Secondary characters on `emotions()`:** for 0.5 s after each key it returns `col`/`dk`/`lt` = Clawd's clay and
+  `tint: null`, so a character reading `col` flashes terracotta: name its colours differently and cross-fade its own
+  tint. Its body motion is beat-locked too, so a second character on the same emotion bounces in unison with Clawd:
+  evaluate its motion half a beat later (lib/cast/bird.js, cat.js `act`).
+- **`eye()` draws the catch-light only when u > 9:** for small characters draw at `U = max(ue, 9.5)` inside
+  `scale(ue/U)` (divide `sw` by the scale), only when `ue·zoom > 9`, so close-ups get the highlight.
+- **One-outline creatures from a tube:** a 3-point spine with a width per point and rounded ends gives bodies, legs and
+  tails as one outline; poses morph by interpolating ~20 numbers, so in-betweens come free. Draw the face after any
+  limb or wing that can cover it.
 - **Poses that wrap, not spread:** `pose(t, o, opts)` returning `o` changed can add to `dy`/`sq`/`rot`, which a spread
   can't, and poses nest: `typing(t, sit(t, feel('happy', t)))` (lib/actions/, like plink's `withLegs`).
 - **Pivot a seated body at the seat:** `dy = 2·sy·cos(rot) − h`, `dx −= 2·sy·sin(rot)` (sy = vertical squash) keeps the
