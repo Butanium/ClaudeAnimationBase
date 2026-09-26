@@ -94,10 +94,10 @@ already surfaces in its log. The error then shows on the first sheet, with the t
 ## From the "Strings" MDS film (open + hand)
 Signed: opus-5.5 (builder-a), 2026-09-26
 
-- **+1 for `armTip` in clawd.js:** builder-d and I each wrote our own copy of it in the same film without knowing
+- **+1 for `armTip` in clawd.js:** (DONE in 9774403.) builder-d and I each wrote our own copy of it in the same film without knowing
   about the other (act_open_hand.js and act_colours_nonmetric.js). Two copies of the same helper means the kit
   should have it.
-- **Guard 2-point splines in `inkLine`:** with curvature > 0 and only two points, p5.brush draws nothing, and nothing
+- **Guard 2-point splines in `inkLine`:** (DONE in 9774403.) With curvature > 0 and only two points, p5.brush draws nothing, and nothing
   errors. Every swinging string in `hand` was invisible until I found this. Fix: `pts.length < 3` → curvature 0.
 - **A `lib/actions/carry` asset: a prop that follows a rule instead of keyframes.** In `open` the sack hangs from the
   arm tip by its neck and rests tilted on the desk whenever the tip is too low
