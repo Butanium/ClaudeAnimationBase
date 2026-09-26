@@ -67,6 +67,13 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   dip. Overshoot in linear size near the target.
 - **Slow particles and intensity ramps:** snow takes 7–13 s to cross the frame and intensity only applies to newly
   spawned flakes, so a ramp from zero leaves the frame empty for seconds; start it before t = 0.
+- **Poses that wrap, not spread:** `pose(t, o, opts)` returning `o` changed can add to `dy`/`sq`/`rot`, which a spread
+  can't, and poses nest: `typing(t, sit(t, feel('happy', t)))` (lib/actions/, like plink's `withLegs`).
+- **Pivot a seated body at the seat:** `dy = 2·sy·cos(rot) − h`, `dx −= 2·sy·sin(rot)` (sy = vertical squash) keeps the
+  underside on the seat through takes and wobbles.
+- **The back view hides raised arms** (both are drawn behind the body): cap the arm angle (~1.1 rad) for gestures seen
+  from behind. And the `draw` hook paints over the body: right for legs pointing at the camera, wrong for legs behind
+  something, which must be skipped.
 - **Accessories drawn in the `draw` hook get the pose for free** (squash, rotation, flip): a snow cap, a hat, a bandage.
 - **Point-of-view eyelids:** lashes read when they hang from the rim into the view; drawn up over the lid they look like
   stitches.
