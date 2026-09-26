@@ -44,6 +44,11 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 
 ### rooms/ — interiors and town
 
+| asset | what it's for | use | source |
+|---|---|---|---|
+| [`room.js`](rooms/room.js) | a room to act in: wall with wainscot, plank floor, a window onto a time-of-day sky (or any sky asset, clipped to the glass) with curtains that breathe, a door that swings open onto a hall (lit or dark), a picture frame (Clawd's portrait) that swings when knocked, a clock whose second hand ticks on the beat, a shelf of books, a floor lamp that flicks on and glows, a potted plant, a rug; one `light` value darkens it all toward night | `ROOM.room(t, { tod, light, window, door, lamp, ... })` returns anchors (`standY`, `window`, `door`...); or the pieces `ROOM.wall/floor/window/door/frame/clock/shelf/rug/lamp/plant`; helpers `ROOM.swing` (door), `ROOM.flick` (lamp), `ROOM.lightOf(tod)`, `ROOM.clip(pts, fn)` | made for the library, 2026-09-25 |
+| [`desk.js`](rooms/desk.js) | Clawd at the computer: a desk sized from Clawd's `u`, a monitor that types and scrolls painted code (no letters) and flashes a pass/fail verdict, or its back for reverse shots (its light spills onto Clawd), keys that dip while typing, a steaming mug, a pencil cup, a stool or office chair; exported seat/stand/keyboard/screen anchors for sitting and typing poses | `DESK.layout({ x, floorY, u })` → anchors; `DESK.set(t, { ..., typing, code: { stop, status: { t, ok } } })` then Clawd; pieces `DESK.desk/monitor/code/keyboard/mug/cup/stool` | made for the library, 2026-09-25 (demo loads `room.js` too) |
+
 ### weather/ — weather and particles
 
 ### cast/ — secondary characters
