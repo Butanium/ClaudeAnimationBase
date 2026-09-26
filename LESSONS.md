@@ -58,8 +58,13 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
 - **Blends across a cut:** never paint the RGB average of two scenes' colours (sky blue + violet = grey mud); give each
   streak one scene's colour and alternate them (lib/camera/whip_pan.js). Covers built from tapered shapes: push the tails
   off-screen at full cover and check the overlap numerically, not by eye.
-- **Check loops without rendering:** `lib/debug/paint_count.js` logs paints per frame; a node harness with p5/p5.brush
-  stubbed finds invalid colours and NaN points in under a second, with a stack into the asset.
+- **Check loops without rendering:** `node lib/debug/check_loop.mjs --use=… --loop=… --sheet=…` runs a loop in node
+  (p5/p5.brush stubbed) in about a second and exits 1 on invalid colours, NaN points, exceptions, unbalanced push/pop or
+  camBegin, `Math.random()`, or a frame that differs when drawn twice, with a stack into the asset; it also counts paints,
+  fills and glows. `lib/debug/paint_count.js` logs paints per frame in a real render.
+- **Every `glow()` and clip flushes the brush** (a one-pixel watercolour fill): a glow per small window costs more than it
+  shows. Glow the few big lights (shops, lamps, neon), and paint only the lit windows of a window grid: a city of windows
+  stays cheap and the flicker still reads (lib/rooms/street.js).
 - **Water in perspective:** give each row of water a parallax depth running linearly from the far edge's depth to 1 at
   the waterline, build band edges in their own layer and map them into the world (`Parallax.map`), so one flat surface
   slides right under pans and zooms (lib/sky/sea.js).
