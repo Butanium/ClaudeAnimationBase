@@ -60,6 +60,8 @@ licence in the header. No licence → no code: list the source under "Elsewhere"
 |---|---|---|---|
 | [`rain.js`](weather/rain.js) | Rain in depth (far streaks thin and pale, near ones long), slanted by the wind, with crown splashes on the ground or any surface (a head, a roof) and rings on puddles; day or night colours; intensity can ramp over time without drops popping. World space, stays put under a panning camera. | `rain(t, {intensity, wind, ground, surfaces, puddles, night, layer: 'far' / 'near'})` around the characters; `rain.puddle([cx, cy, rx, ry])` | made for the library, 2026-09-25, painter-weather |
 | [`dust.js`](weather/dust.js) | Cartoon dust for acting: a landing puff that rolls out both ways with flying specks, a skid trail along a sliding foot, a run's wind-up (spinning feet throw dust back) and the cloud left hanging at launch. Puffs grow, roll and shrink away; each event is one cloud with one inked silhouette. World space. | `dust.land(t, t0, x, y)`, `dust.skid(t, t0, t1, s => footXY)`, `dust.kick(t, t0, t1, footXY, dir)`; `dust.cloud(puffs)` for your own | made for the library, 2026-09-25, painter-weather |
+| [`lightning.js`](weather/lightning.js) | A lightning strike: a jagged forked bolt with an inked edge and a white-hot core that flickers like the real thing (leader, flash, dip, re-strike, decay), the clouds lit from inside behind silhouettes, a flash over the land, and the thunder's cue time (`S.thunder`) for a sound, a take or a camera rumble. All light is `glow()`. | `S = lightning.strike(t0, {from, to, delay, size})`; `lightning.sky(t, S)`, `.flash(t, S)`, `.bolt(t, S)`, `.shake(t, S, amt)` | made for the library, 2026-09-25, painter-weather |
+| [`fireflies.js`](weather/fireflies.js) | Fireflies drifting on lazy loops and blinking (layered `glow()` halos over a tiny painted bug with a lit tail, faint embers between blinks); they blink on their own clocks or all together on the beat in a wave, and one can fly to a point (a head, a hand), perch blinking, and leave. Night scenes. World space. | `fireflies(t, {n, area, sync, visit: {i, t0, t1, at}})`; `fireflies.at(i, t, o)` for eyes to follow one | made for the library, 2026-09-25, painter-weather |
 
 ### cast/ — secondary characters
 
@@ -86,6 +88,12 @@ What was checked and why the rest wasn't imported: [imported/SURVEY.md](imported
 |---|---|---|---|
 | [`bianbianzhu/beach.js`](imported/bianbianzhu/beach.js) | a beach set: a palm whose fronds sway, a sea band with glints, a shoreline that laps once a bar, a parasol that opens, a volleyball, gulls, a sun with a face | `BEACH.palm(x, y, s, sway)`, `.sea(t, x0, x1, y0, y1)`, `.shoreline(t, x0, x1, y)`, `.parasol(x, y, s, open)`, `.vball(x, y, r, rot)`, `.gull(x, y, s, flap)`, `.sun(x, y, r, t, face)` | [bianbianzhu/ClaudeAnimationBase](https://github.com/bianbianzhu/ClaudeAnimationBase/tree/feb20e9) "Beach Day", MIT |
 | [`bianbianzhu/ukulele.js`](imported/bianbianzhu/ukulele.js) | Clawd playing a ukulele (front view): strums on the beat, fretting hand on the neck, wordless singing, neck lift; the uke slung on the back for walks | `UKULELE.player(x, y, u, mood, { tilt, mouth: UKULELE.sing(t) })`, `UKULELE.back(u, sw, view)` in a draw hook | same |
+
+### debug/ — tools for checking your work
+
+| file | what it's for | use | source |
+|---|---|---|---|
+| [`paint_count.js`](debug/paint_count.js) | logs each rendered frame's paint() + inkLine() count (the kit's cost unit) as a page line (ignore the extra t=0.00 line from page setup) | add `lib/debug/paint_count.js` last in `--use` | made for the library, 2026-09-25, painter-weather |
 
 ### Elsewhere (link only: no licence, or not code)
 
