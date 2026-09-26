@@ -11,7 +11,28 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
 - Viewers notice what code-side checks don't: a looping walk whose splashes don't line up with feet, a small
   reframing at a cut, a scene that doesn't connect. Get a first audience early (render the whole film with sound).
 
+### Rendering
+- **Stale GPU memory (fixed in core.js, 2026-09-25).** On the RunPod NVIDIA pods, fully transparent 8×8 tiles of a
+  texture (and never-drawn canvas areas) can read back as other surfaces' data after many frames in ONE page: salmon
+  stair-step blocks (the glow texture's corners holding p5.brush's red mask memory, drawn additively), once a black
+  square. Only long sheets / --frames workers showed it; a frame rendered alone was clean. core.js now keeps no
+  fully transparent texel in sampled textures (alpha 1/255), uploads paper and glow once, and reseeds p5.brush per
+  boil frame (brush.seed / brush.noiseSeed), which also makes every frame a true function of t. If a one-off
+  artefact appears, re-render it alone before debugging the scene.
+- **One pod's GPU serializes parallel renders:** 1, 4 or 8 render.mjs processes on one A4000 all gave ~630 ms/frame
+  effective. To go faster, split the film across pods (one slice each; the MDS film's tools/final_render.sh --part).
+- **Big watercolour fills are the cost:** one France-sized fill was ~600 ms/frame; a wash + ink outline reads the
+  same at medium size.
+- **Crews sharing a machine share one pod by default:** another crew's `stop` deleted a film's pod twice mid-work.
+  `stop` now refuses while another checkout rendered in the last 30 min (`users` shows who; `--force` overrides), and
+  CLAWD_POD_NAME / CLAWD_STATE_DIR give a crew its own pod. For a multi-agent build, start the pod with
+  IDLE_MINUTES=90: agents read and code for long stretches without rendering.
+
 ### p5.brush traps
+- **inkLine silently draws nothing** for 2 points with curvature > 0 and for a NaN point (core's lerp() on arrays
+  gives NaN). Both are guarded in core.js now (straight 2-point lines, a console warning); paint() throws on NaN.
+- **glow() barely shows on cream paper:** to light a point on paper, paint a warm wash spot and a thin ink ring under
+  it; glow on top.
 - **Light over dark can vanish.** p5.brush mixes colour like pigment, so depending on the colours a pale ink line
   over darker paint disappears (see the zoom bullet below for the colours tested). Paint light marks (ripples, foam,
   highlights on dark ground) as thin **washes**, e.g. `paint(ribbon(points, w0, w1), { wash: col, ink: null })`;
@@ -55,6 +76,33 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
 - **Imported code keeps light ink over dark** even when its author knew the trap: check every light line in an import.
 
 ### Patterns
+- **Narrated films: the voice sets the clock.** Write the script with `{beat}` markers and `[pauses]`, voice it
+  (edge-tts gives word boundaries), and derive shots, beats and every word's time from the voice. Time every read
+  from a beat or, better, from the exact word ("tosses") so the action starts as the word starts; a re-voice then
+  moves everything with nothing to fix. Words: match the TTS's tokens ("In 1954" is one token) and pick the n-th
+  occurrence. Pipeline and tools: the MDS film (~/claude-playgrounds/mds-explainer: pipeline/narrate.py, tools/tl.mjs).
+- **Explainers: check every claim against the data before voicing it.** Narration written from expectation said
+  things the computed results didn't do ("the ring evens out"); a builder measuring caught it.
+- **Real data as motion:** play real iterates with a monotone cubic (Fritsch–Carlson) time map through
+  [time, iterate] keys pinned to words, Catmull-Rom between iterates, log interpolation for a stress gauge; assert the
+  math at load (e.g. an update equals the next iterate; a majorizer stays above the curve).
+- **Reads the narrator names need a push-in** (a table at 20% of the frame reads as texture). Reactions without losing
+  the data: a crash zoom onto the character (~.17 s in, ~.6 s hold, ~.8 s out), timed so the next read starts as it
+  pulls out. A list named quickly: toss each card past the lens (big, ~.5 s), then down to its slot.
+- **Held and thrown props:** `armTip(x, y, u, o, 'L'|'R')` (clawd.js) is the arm tip in world space. Pop a prop into
+  the hand during the wind-up and launch it from the tip; a prop that appears mid-air doesn't read as thrown. A string
+  held between both tips: line drawn BEFORE clawd() (behind the body), beads after, and mouth: null (a string across
+  the face reads as a mouth). Clawd's 2.2u arm nubs can't sell an overhead wind-up: lean the body, squash, stretch,
+  smear. Launch a thrown handful together (≤ .02 s stagger), vary the flight times.
+- **emotions() at a cut:** feed it film time with the previous shot's mood as a key before the shot, or the first
+  emote re-pops and the idle's phase jumps. A key with new overrides but the same emotion still fires a take: steer
+  eyes with lookX/lookY on the pose. 'happy' eyes are closed arcs (lookX does nothing).
+- **Many lines on screen (60–90 springs or chords) become a scribble:** fade the ones near rest as the layout settles
+  and treat the bundle as one read.
+- **Subtitles in post:** keep what matters above y ≈ 930 (a burnt-in band below). With Clawd on the desk, its eyes stay
+  above screen y 900 at zoom z only if cy ≥ HOME.y − 6u − 360/z.
+- **Don't zoom out past what the set paints** (≲ .75 showed bare paper at the frame edge in the MDS film).
+- **A thing at the frame edge by a sliver reads as a framing error:** fully in or fully out.
 - **One outline around a group of overlapping shapes** (a dust cloud, a bush): paint every shape's outline first, then
   all the washes over them. The washes cover the inner outlines and only the silhouette stays inked.
 - **Parallax inside one camera:** per layer of depth d, `translate(c); scale(zd/zoom); translate(-(c·d + ref·(1−d)))`
@@ -167,3 +215,13 @@ shows them all). A studio-lead reviewed every sheet once before merging. What it
 - **Parallel painters in one repo:** one worktree and one category folder each, README rows under pre-made headings
   (merges then conflict rarely), render slots shared machine-wide (`render_shared.sh`), lessons sent to the lead instead
   of edited into this file by six people.
+
+### Strings (2026-09-25) — ~/claude-playgrounds/mds-explainer (an 8.6-min narrated explainer of multidimensional scaling)
+Clawd rebuilds a map of France from a bag of strings cut to road distances, then the film goes through springs and
+stress, SMACOF and majorization, the rotation/reflection symmetry, classical MDS (double centring, eigenvectors),
+Ekman's colour data folding into the colour wheel, nonmetric MDS (Shepard staircase) and choosing dimensions. Every
+result on screen is real (pipeline/mds_data.py). A narrated film: script with beats → edge-tts voice with word timings
+→ timeline; subtitles in post (soft track + a burnt-in version). Five builders (two shots each, own worktree), a sound
+teammate (synthesized bed + sfx, ducked, −16 LUFS) and a director; ~5 h of building. What the crew learned is in the
+general sections above (Rendering, the new traps and Patterns); per-builder notes: the film's story/LESSONS_FILM.md.
+The hardest bug: the long-page stale-GPU-memory artefact (Rendering), root-caused by builder-b with GL instrumentation.

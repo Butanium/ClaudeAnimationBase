@@ -36,6 +36,9 @@ const easeIn = x => Math.pow(clamp(x), 3);
 const elasticOut = x => { x = clamp(x); return x === 0 || x === 1 ? x : Math.pow(2, -10 * x) * Math.sin((x * 10 - .75) * (TAU / 3)) + 1; };
 // keyframes: kf(t, [[t0, v0], [t1, v1], ...], easeFn). Values may be numbers or arrays of numbers.
 function kf(t, keys, e = ease) {
+  // keys out of order fail silently (a camera jumps or holds): happens when one key comes from a beat and the next
+  // from an earlier word. Warn once per offending key list.
+  for (let i = 1; i < keys.length; i++) if (keys[i][0] < keys[i - 1][0]) { warnOnce(`kf: keys not ascending at ${keys[i - 1][0]} -> ${keys[i][0]}`); break; }
   if (t <= keys[0][0]) return keys[0][1];
   for (let i = 1; i < keys.length; i++) {
     if (t < keys[i][0]) {
@@ -112,7 +115,20 @@ function makeGlowTex() {
   const g = createGraphics(256, 256); g.pixelDensity(1); const c = g.drawingContext, gr = c.createRadialGradient(128, 128, 0, 128, 128, 128);
   [[0, 1], [.18, .8], [.45, .32], [.75, .08], [1, 0]].forEach(([s, a]) => gr.addColorStop(s, `rgba(255,255,255,${a})`));
   c.fillStyle = gr; c.fillRect(0, 0, 256, 256);
-  return g;
+  noZeroTexels(c, 256, 256);
+  return stillImage(g);
+}
+// GPU trap (LESSONS.md, "stale GPU memory"): after many frames in one page, the all-zero (fully transparent) tiles of
+// a WebGL texture can come back as stale GPU memory (seen: p5.brush's opaque red fill mask, as salmon staircases in the
+// additive glow). A texture with no fully transparent texel is immune: alpha 1/255 where it was 0 is invisible.
+function noZeroTexels(c, w, h) {
+  const id = c.getImageData(0, 0, w, h), d = id.data;
+  for (let i = 3; i < d.length; i += 4) if (!d[i]) d[i] = 1;
+  c.putImageData(id, 0, 0);
+}
+// A p5.Graphics that never changes, as a p5.Image: p5 uploads an image once, but re-uploads a Graphics at every use.
+function stillImage(g) {
+  const img = createImage(g.width, g.height); img.drawingContext.drawImage(g.canvas || g.elt, 0, 0); return img;
 }
 // Paint everything OUTSIDE a star-shaped hole (irises, mouth-shaped reveals, keyholes).
 function irisShape(pts, col = PAL.ink, far = 4000) {
@@ -207,9 +223,15 @@ function paintAt(pts, o) {
     brush.beginShape(o.curv || 0); for (const p of pts) brush.vertex(p[0], p[1]); brush.endShape(true);
   }
 }
+// Two silent traps are guarded here: p5.brush's spline draws NOTHING for 2 points with curvature > 0 (so 2-point lines
+// are drawn straight), and nothing for a NaN point (paint() throws on NaN; this warns instead of vanishing quietly).
 function inkLine(pts, sw = 1, col = PAL.ink, br = 'ink', curv = .5) {
+  if (pts.length < 3) curv = 0;
+  if (pts.some(p => !isFinite(p[0]) || !isFinite(p[1]))) { warnOnce('inkLine: a NaN/Infinity point; the line is skipped (lerp() on arrays gives NaN)'); return; }
   centred(pts, (P) => { brush.noFill(); brush.noWash(); brush.noHatch(); brush.set(br, col, sw); brush.spline(P, curv); });
 }
+const WARNED = new Set();
+function warnOnce(msg) { if (!WARNED.has(msg)) { WARNED.add(msg); console.warn(msg); } }
 
 // ---------- lettering (drawn on the 2D compositor, under the paper grain) ----------
 // Use sparingly: see "No text" in ANIMATION_GUIDE.md. Clawd's emotes are painted and never need these.
@@ -247,6 +269,8 @@ function flushBrush() {
 function flushLetters() {
   if (!LETTERS.length) return;
   letG.clear(); drawLetters(letG.drawingContext); LETTERS = [];
+  const lc = letG.drawingContext;                   // no fully transparent texel (see noZeroTexels): 1/255 black under the letters
+  lc.save(); lc.globalCompositeOperation = 'destination-over'; lc.fillStyle = 'rgba(0,0,0,.004)'; lc.fillRect(0, 0, W, H); lc.restore();
   flushBrush();
   // Letters are already in screen space, so composite them with the base transform even inside camBegin().
   push(); resetMatrix(); translate(-W / 2, -H / 2); image(letG, 0, 0); pop();
@@ -284,7 +308,7 @@ function defineBrushes() {
 async function setup() {
   createCanvas(W, H, WEBGL); pixelDensity(1); noLoop();
   brush.scaleBrushes(5); defineBrushes();
-  paperG = makePaper(); grainC = makeGrain(); glowTex = makeGlowTex(); letG = createGraphics(W, H); letG.pixelDensity(1);
+  paperG = stillImage(makePaper()); grainC = makeGrain(); glowTex = makeGlowTex(); letG = createGraphics(W, H); letG.pixelDensity(1);
   outC = document.getElementById('out'); outX = outC.getContext('2d');
   await document.fonts.load('100px "Permanent Marker"');
   window.ready = true;
@@ -295,6 +319,7 @@ function draw() {
   LETTERS = []; CAM = LAST_CAM = null;
   push(); translate(-W / 2, -H / 2);
   BOILN = Math.floor(T * BOIL); CLAWD_N = 0; boilSeed('frame'); noiseSeed(77);
+  brush.seed(BOILN); brush.noiseSeed(77);           // p5.brush's own random/noise streams: boil on twos, frames a function of t
   image(paperG, 0, 0);
   drawWorld(T);
   pop();
@@ -316,6 +341,7 @@ window.renderSheet = async (times, cols = 3, w = 640, crop = null, at = null) =>
   if (at) at = at.map((v) => typeof v === 'string' ? (0, eval)(v) : v);
   const [, , cw, ch] = at || crop || [0, 0, W, H], h = Math.round(w * ch / cw), rows = Math.ceil(times.length / cols), sc = document.createElement('canvas');
   sc.width = cols * w; sc.height = rows * h; const c = sc.getContext('2d'), ms = [];
+  c.fillStyle = '#000'; c.fillRect(0, 0, sc.width, sc.height);   // unused cells: never-drawn canvas memory reads as garbage
   for (let i = 0; i < times.length; i++) {
     const t0 = performance.now(); T = times[i]; await redraw(); composite(times[i]); ms.push(Math.round(performance.now() - t0));
     const x = (i % cols) * w, y = Math.floor(i / cols) * h;

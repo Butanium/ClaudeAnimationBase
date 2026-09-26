@@ -37,6 +37,21 @@ function spinView(a) {
 }
 // A turn from heading a0 to a1 (in turns) between t0 and t1. It steps through the key views and smears the
 // in-between drawings. Spread it into clawd(): clawd(x, y, u, { ...feel('happy', t), ...turn(t, 2, 2.2, 0, .25) }).
+// World position of an arm TIP for a clawd(x, y, u, o) call: which = 'L' | 'R' (o.aL / o.aR). Mirrors clawd()'s own
+// transforms (dx/dy, rot about the feet, flip/sx/sy, squash, smear, the view's arm pivot and its lift), so a held
+// prop, a thrown one leaving the hand or a string held taut between both arms touches the tips exactly. Returns null
+// when the view doesn't show that arm. From "Strings" (the MDS film, 2026-09-25), where four builders each wrote it.
+function armTip(x, y, u, o, which) {
+  const V = VIEWS[o.view] || VIEWS.front, A = V.arms.find(a => a[2] === which); if (!A) return null;
+  const [px, dir] = A, a = which === 'L' ? (o.aL ?? .2) : (o.aR ?? .2);
+  let lx, ly;
+  if (dir === 0) { const r = .7 - a; lx = px * u + 2.1 * u * Math.cos(r); ly = -4.2 * u + 2.1 * u * Math.sin(r); }
+  else { const r = dir < 0 ? a : -a; lx = (px + dir * .55 * clamp((Math.abs(a) - .7) / .9)) * u + dir * 2.2 * u * Math.cos(r); ly = -4.5 * u + dir * 2.2 * u * Math.sin(r); }
+  const sq = (o.sq || 0) + (o.take || 0), sm = clamp(o.smear || 0);
+  const X = lx * (o.flip ? -1 : 1) * (o.sx ?? 1) * (1 + sq * .6) * (1 + sm * .35), Y = ly * (o.sy ?? 1) * (1 - sq), r = o.rot || 0;
+  return [x + (o.dx || 0) * u + X * Math.cos(r) - Y * Math.sin(r), y + (o.dy || 0) * u + X * Math.sin(r) + Y * Math.cos(r)];
+}
+
 function turn(t, t0, t1, a0, a1) {
   const k = ease(seg(t, t0, t1)), v = spinView(lerp(a0, a1, k));
   return { ...v, smear: t > t0 && t < t1 ? .55 * Math.sin(k * Math.PI) : 0, smearDir: 0 };
