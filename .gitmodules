@@ -1,0 +1,3 @@
+[submodule "vendor/anidoodle"]
+	path = vendor/anidoodle
+	url = https://github.com/alexgreensh/anidoodle
