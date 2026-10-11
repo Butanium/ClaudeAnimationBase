@@ -38,7 +38,12 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   box's `~/.ssh/id_*.pub` and `NVIDIA_DRIVER_CAPABILITIES=all` was up in < 2 min. Workaround: create the plain pod
   (REST POST /pods, `name` = `$RP_POD_NAME`), write its id to `$POD_STATE`, then `remote/runpod_session.sh start`
   adopts it and runs the setup. It has no idle watchdog (that lives in the template's start command): stop it yourself.
-  Root cause not found; check the template's start command first.
+  Root cause not found. Later the same night template pods started normally again (ready in 37 s), so it was most
+  likely transient on RunPod's side: retry later before debugging the template.
+- **An RTX 3090 pod (driver 580.159) rendered garbage** (2026-10-11): `GL_INVALID_FRAMEBUFFER_OPERATION: glBlitFramebuffer:
+  Framebuffer is incomplete` in the page log, frames mostly flat paper with stray marks, while gpu_probe.mjs still passed.
+  RTX A4500 (driver 595.91) and RTX 4000 Ada were fine. Grep a render log for FRAMEBUFFER before trusting it, and keep
+  3090s out of `RP_GPUS`.
 
 ### p5.brush traps
 - **inkLine silently draws nothing** for 2 points with curvature > 0 and for a NaN point (core's lerp() on arrays
