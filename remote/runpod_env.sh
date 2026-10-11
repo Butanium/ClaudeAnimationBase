@@ -7,7 +7,7 @@ RP_TEMPLATE_NAME=clawd-render
 # CLAWD_POD_NAME / CLAWD_STATE_DIR give a crew its own pod instead of the machine's shared one.
 RP_POD_NAME=${CLAWD_POD_NAME:-clawd-render-$(hostname -s)}
 # Cheapest first; all of them run WebGL fine. The pod gets the first one in stock.
-RP_GPUS=${RP_GPUS:-'"NVIDIA RTX A4000","NVIDIA RTX A4500","NVIDIA RTX 2000 Ada Generation","NVIDIA RTX A5000","NVIDIA RTX 4000 Ada Generation","NVIDIA GeForce RTX 3090","NVIDIA L4","NVIDIA A40"'}
+RP_GPUS=${RP_GPUS:-'"NVIDIA RTX A4000","NVIDIA RTX A4500","NVIDIA RTX 2000 Ada Generation","NVIDIA RTX A5000","NVIDIA RTX 4000 Ada Generation","NVIDIA L4","NVIDIA A40"'}
 # The pod terminates itself after this long without a render, or this long after boot (the boot script's watchdog).
 IDLE_MINUTES=${IDLE_MINUTES:-20}
 MAX_HOURS=${MAX_HOURS:-4}
