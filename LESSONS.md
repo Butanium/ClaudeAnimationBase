@@ -40,10 +40,13 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   adopts it and runs the setup. It has no idle watchdog (that lives in the template's start command): stop it yourself.
   Root cause not found. Later the same night template pods started normally again (ready in 37 s), so it was most
   likely transient on RunPod's side: retry later before debugging the template.
-- **An RTX 3090 pod (driver 580.159) rendered garbage** (2026-10-11): `GL_INVALID_FRAMEBUFFER_OPERATION: glBlitFramebuffer:
-  Framebuffer is incomplete` in the page log, frames mostly flat paper with stray marks, while gpu_probe.mjs still passed.
-  RTX A4500 (driver 595.91) and RTX 4000 Ada were fine. Grep a render log for FRAMEBUFFER before trusting it, and keep
-  3090s out of `RP_GPUS`.
+- **Long `--clip` pages can render garbage on a pod** (Catapulte v3, 2026-10-11): `GL_INVALID_FRAMEBUFFER_OPERATION:
+  glBlitFramebuffer: Framebuffer is incomplete` in the page log, and from early in the film the frames lost their washes
+  (only ink, glows and paper left). It happened in one-page `--clip` renders on an RTX 3090 (driver 580) and an RTX 4000
+  Ada, while 4-frame sheets on the same pod were clean, and v1/v2 of the same film (lighter frames) rendered fine
+  with `--clip` on an A4500 (driver 595). What worked: `--frames --workers=2 --recycle=30` (fresh pages; 0 errors, 0.44
+  s/frame on an A4000), then `--encode --audio=…` on the pod (it keeps out/ between calls; FRAMES=1 is needed to bring
+  frames home). GPU vs page age is not separated: grep a render log for FRAMEBUFFER before trusting it.
 
 ### p5.brush traps
 - **inkLine silently draws nothing** for 2 points with curvature > 0 and for a NaN point (core's lerp() on arrays
