@@ -126,8 +126,13 @@ if (args.sheet || args.strip) {
   console.log(`${todo.length} frames to render (${last - first + 1 - todo.length} already done), ${workers} workers`);
   let next = 0, done = 0; const start = Date.now();
   await Promise.all(Array.from({ length: workers }, async (_, w) => {
-    const page = await openPage('#' + w);
+    // --recycle=N: reopen the page every N frames. With --soft-gl (SwiftShader) a page slows from ~0.2 s to 5-30 s
+    // per frame after a handful of frames ("Catapulte", 2026-10-11); a fresh page is fast again.
+    let page = await openPage('#' + w), used = 0;
+    const recycle = +(args.recycle || 0);
     while (next < todo.length) {
+      if (recycle && used >= recycle) { await page.close(); page = await openPage('#' + w); used = 0; }
+      used++;
       const i = todo[next++], f = `${FRAMES_DIR}/f${String(i).padStart(5, '0')}.jpg`;
       const buf = await frameOf(page, i / fps, 'image/jpeg', .94);
       writeFileSync(f + '.tmp', buf); renameSync(f + '.tmp', f);

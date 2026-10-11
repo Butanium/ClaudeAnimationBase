@@ -28,6 +28,18 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   CLAWD_POD_NAME / CLAWD_STATE_DIR give a crew its own pod. For a multi-agent build, start the pod with
   IDLE_MINUTES=90: agents read and code for long stretches without rendering.
 
+- **CPU renders (`--soft-gl`) slow down inside one page:** a fresh page draws a frame in ~0.2 s, then after ~5 frames
+  the same page takes 5–30 s per frame, whatever the content (Catapulte, 2026-10-11: the same frames were fast again in
+  a new page). `render.mjs --frames --recycle=N` reopens each worker's page every N frames, but on this 8-core box
+  page setup plus several workers fighting over SwiftShader made it slower overall: prefer a GPU, and keep CPU sheets
+  short (≤ 6 frames per command) when one isn't available.
+- **RunPod template pods that never start (2026-10-11):** four `clawd-render` template pods in a row never got a runtime
+  ("no public ssh port after 10 min"), while a plain `runpod/base:1.0.2-ubuntu2404` pod with `env.PUBLIC_KEY` = this
+  box's `~/.ssh/id_*.pub` and `NVIDIA_DRIVER_CAPABILITIES=all` was up in < 2 min. Workaround: create the plain pod
+  (REST POST /pods, `name` = `$RP_POD_NAME`), write its id to `$POD_STATE`, then `remote/runpod_session.sh start`
+  adopts it and runs the setup. It has no idle watchdog (that lives in the template's start command): stop it yourself.
+  Root cause not found; check the template's start command first.
+
 ### p5.brush traps
 - **inkLine silently draws nothing** for 2 points with curvature > 0 and for a NaN point (core's lerp() on arrays
   gives NaN). Both are guarded in core.js now (straight 2-point lines, a console warning); paint() throws on NaN.
@@ -225,3 +237,22 @@ result on screen is real (pipeline/mds_data.py). A narrated film: script with be
 teammate (synthesized bed + sfx, ducked, −16 LUFS) and a director; ~5 h of building. What the crew learned is in the
 general sections above (Rendering, the new traps and Patterns); per-builder notes: the film's story/LESSONS_FILM.md.
 The hardest bug: the long-page stale-GPU-memory artefact (Rendering), root-caused by builder-b with GL instrumentation.
+
+### Catapulte (2026-10-10) — ~/claude-playgrounds/catapulte
+A 54 s match d'impro: Clément (a human rig, new: `lib/cast/human.js`) and Clawd in hockey jerseys; every mimed object the
+partner accepts becomes real (an orange, a catapult), the orange goes through the roof, the referee is buried in the
+audience's slippers, the orange comes back. Soundtrack synthesized by a teammate from the same story.json beats.
+- **A human next to Clawd:** IK on two-bone tubes with hand targets (body space or world) was enough for every pose
+  (cupping, slapping, hauling a rope, an arm up holding a prop); knees bend outward in a front view and toward the
+  facing side once turned, or the legs read knock-kneed. Head ~12% bigger than real proportions reads better.
+- **A mimed (imaginary) object:** dashed outline as short wash ribbons WITH a thin ink outline, plus a faint glow
+  behind it. Without the ink the dashes vanished over a white jersey and the grey floor. Hold the mime away from the
+  body, against a dark or mid background, at arm's length.
+- **"It becomes real":** clip the real drawing to a circle growing from the touching hand (`beginClip`), ghost outside,
+  a pop of light when it completes. Reads at a glance.
+- **Someone mimes a big object:** draw the ghost's parts one by one while the character darts around the shape
+  (`sketch` 0..1 on the catapult); a ghost that just fades in next to a gesturing character didn't read.
+- **Things thrown onto someone:** a mound polygon growing with the number landed, under the thrown props, turns a
+  scatter into a heap that buries them.
+- **A shared stage drawn by one `stage()` function** (set, crowd, camera, optional whip pan) kept nine shots
+  consistent; ease each shot's camera from the previous shot's end, or the small reframe at the cut reads as a glitch.
