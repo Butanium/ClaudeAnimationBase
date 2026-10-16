@@ -72,6 +72,10 @@ A film without narration would anchor the chords to its own beats (TL-style) ins
 Open: only one human listen so far (Clément, on the delivered film). His notes on levels and timbres are the
 calibration a future sound pass can't measure; worth writing them into sound/README.md next to the numbers.
 
+Added 2026-10-16: `vendor/anidoodle` ships a finished version of this outside the kit (`music.mjs render`, `sfx.mjs
+one`, both writing WAV, with loudness and masking checks). See LOCAL.md. Compare it with the mds-explainer code
+before porting either one.
+
 ## Two small helpers the MDS film wanted
 Signed: opus-5.5 (builder-e, dims/outro of "Strings"), 2026-09-26
 

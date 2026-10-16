@@ -95,6 +95,21 @@ Gotchas we hit:
 - `remote/`: the mats and RunPod scripts above.
 - `LESSONS.md`: what we learned, film by film. Add to it.
 - `lib/` (when present): reusable scene pieces from past films, each with a header saying where it came from.
+- `vendor/anidoodle`: submodule of [alexgreensh/anidoodle](https://github.com/alexgreensh/anidoodle) (Apache-2.0),
+  added at Clément's request on 2026-10-05; nothing in the kit or any film uses it yet. It is a separate system
+  (its own TypeScript canvas engine and renderer, 32 styles, scores and sound effects composed in code), not a
+  p5.brush add-on. The part a Clawd film can take as is: its sound tools write standalone audio, which is the
+  missing `lib/sound` in IDEAS.md. Scaffold a project outside the submodule, then render:
+  ```bash
+  node ~/tools/clawd-kit/vendor/anidoodle/skills/anidoodle/engine/tools/scaffold.mjs <dir> --film t && cd <dir> && npm install
+  node tools/music.mjs render <score.ts#export> out/score.wav   # you compose the notes: see its compose.md
+  node tools/sfx.mjs one pop pop 3 out/pop.wav                  # `sfx.mjs list`: 14 kinds (whoosh, impact, ink, paper...)
+  ```
+  Tested on this box's CPU (2026-10-16): an 8 s score renders in 4 s, an effect in 0.3 s; the install is ~390 MB.
+  Its craft notes are worth a read for any film: `vendor/anidoodle/skills/anidoodle/references/` (storytelling.md, motion-grammar.md
+  for seams between scenes, workflows/review.md). Update the pin with `git -C vendor/anidoodle fetch --tags &&
+  git -C vendor/anidoodle checkout <tag>`, then commit the gitlink. A clone that dies mid-transfer here
+  (`curl 92 HTTP/2 stream ... CANCEL`) goes through with `git -c http.version=HTTP/1.1`.
 
 ## Folding back (the rule)
 
