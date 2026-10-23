@@ -18,6 +18,9 @@ mkdir -p "$STATE_DIR"
 # stop refuses while another checkout rendered on the pod within this many minutes (or is rendering now)
 ACTIVE_MINUTES=${ACTIVE_MINUTES:-30}
 POD_STATE=$STATE_DIR/runpod_pod
+# ssh's ControlPath socket (cm-<40 hex>.<16 random>) must fit a Unix socket path (< 108 chars): a long STATE_DIR made
+# every ssh fail silently ("no ssh after 15 min"), so put the sockets elsewhere then.
+CM_DIR=$STATE_DIR; [ $((${#STATE_DIR} + 60)) -lt 104 ] || CM_DIR=${XDG_RUNTIME_DIR:-/tmp}
 
 # rp METHOD PATH [JSON]: RunPod REST API v1; prints the response body, fails on HTTP errors.
 rp() {
@@ -32,5 +35,5 @@ rp_account() {
 # pod_ssh PORT: the ssh command for the pod (the host goes after it). A new pod gets a fresh known_hosts file.
 pod_ssh() {
   echo "ssh -p $1 -l root -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new" \
-    "-o UserKnownHostsFile=$STATE_DIR/runpod_known_hosts -o ControlMaster=auto -o ControlPath=$STATE_DIR/cm-%C -o ControlPersist=10m"
+    "-o UserKnownHostsFile=$STATE_DIR/runpod_known_hosts -o ControlMaster=auto -o ControlPath=$CM_DIR/cm-%C -o ControlPersist=10m"
 }
