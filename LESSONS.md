@@ -48,6 +48,14 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   s/frame on an A4000), then `--encode --audio=…` on the pod (it keeps out/ between calls; FRAMES=1 is needed to bring
   frames home). GPU vs page age is not separated: grep a render log for FRAMEBUFFER before trusting it.
 
+- **`CLAWD_STATE_DIR` must be a short path** (manifold-films, 2026-10-22): the ssh ControlPath socket (`cm-<40 hex>.<random>`)
+  lives in it and Unix socket paths stop at 108 chars. With `~/.cache/clawd-render-mf-look-paint` every ssh failed, so a
+  healthy pod "never accepted ssh" and `ensure` deleted it after 15 min; only `ssh -v` shows the real error
+  (`unix_listener: path ... too long for Unix domain socket`). `~/.cache/crp-<x>` works.
+- **The CPU page slowdown, measured on a light scene** (manifold-films style test, line work + ~30 washes per frame, box
+  load average 20-70 from other crews): one `--soft-gl` page drew 14 frames at 50-350 ms each, then one frame took
+  94 s and the rest 1-16 s (24 frames in 6.8 min). The same frames on an RTX A4000 pod: 70-130 ms in a sheet.
+
 ### p5.brush traps
 - **inkLine silently draws nothing** for 2 points with curvature > 0 and for a NaN point (core's lerp() on arrays
   gives NaN). Both are guarded in core.js now (straight 2-point lines, a console warning); paint() throws on NaN.
@@ -201,6 +209,14 @@ film. Add to it when a film ends, or as soon as something costs you an hour.
   conflicts). Teammates merge the main branch in whenever something lands, so they check against the real thing.
   A take handed between two owners' shots: the earlier shot exports its camera and pose functions, the later
   one blends the camera over ~1 s.
+- **Math explainers in 3D without a 3D engine** (manifold-films style test, 2026-10-22): project with a tiny orbit
+  camera (`P(p) -> [sx, sy, depth, px per unit]`), then paint depth in layers: the object's shaded body, everything on
+  the far side (paler: mix toward the body colour, smaller, thinner), a translucent glaze of the body colour
+  (`washOp` ~110), then the near side in full ink. A point on a unit sphere faces the camera iff `p . dir > 1/D`; a
+  polyhedron edge is near iff one of its faces faces the camera. Keep glazes in the body's hue family: pale ochre faces
+  over a blue sphere went green. Labels and captions: `letter()` with a CSS `font` string and `ink: false`; its halo
+  width is .12 x the size argument, which the font string overrides for the glyphs, so a big size + small font = a wide
+  halo. Code: ~/claude-playgrounds/manifold-films/engine/styletest/paint/kit/src/scenes/mf_*.js.
 
 ## Films
 
