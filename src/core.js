@@ -311,6 +311,7 @@ async function setup() {
   paperG = stillImage(makePaper()); grainC = makeGrain(); glowTex = makeGlowTex(); letG = createGraphics(W, H); letG.pixelDensity(1);
   outC = document.getElementById('out'); outX = outC.getContext('2d');
   await document.fonts.load('100px "Permanent Marker"');
+  for (const f of (window.FONTS || [])) await document.fonts.load(f);   // a scene's own fonts (@font-face in studio.html)
   window.ready = true;
   if (!location.search.includes('render')) devUI();
 }
