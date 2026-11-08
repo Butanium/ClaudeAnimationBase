@@ -280,3 +280,15 @@ audience's slippers, the orange comes back. Soundtrack synthesized by a teammate
   scatter into a heap that buries them.
 - **A shared stage drawn by one `stage()` function** (set, crowd, camera, optional whip pan) kept nine shots
   consistent; ease each shot's camera from the previous shot's end, or the small reframe at the cut reads as a glitch.
+
+### Save Before Flight (2026-11-08) — ~/claude-playgrounds/save-before-flight/animation (rough cut only)
+A 22 s film of a swarm.art stage (a floppy disk on a meadow, a runway out of its shutter): Clawd pushes the shutter open
+and runs up the runway to the horizon.
+- **Perspective without 3D:** on a flat ground seen from above, size is linear in distance below the horizon:
+  `u = u0 · (y − horizon) / (y0 − horizon)`. Running away = y toward the horizon and u with it; a `back` view with `walk`
+  and a small bounce reads as running even at u ≈ 3. Hide the character below u ≈ 0.6.
+- **Porting a still:** a p5.brush `layer(P)` module written for a 600-unit square maps into the kit's world by one scale
+  and one offset (here ×3.2, horizon at y 115); keep its geometry as data so the stage and the motion share it.
+- Flat washes for big areas kept a wash-heavy 22 s film at 220 ms/frame `--clip` on an A5000 with no FRAMEBUFFER
+  errors; a 4-frame `--soft-gl --draft` CPU sheet ran at ~90 ms/frame for the same scene.
+
